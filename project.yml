@@ -28,6 +28,10 @@ targets:
       - path: CalenminderKit
     dependencies:
       - sdk: EventKit.framework
+      # AgendaService (Phase 4) calls WidgetCenter.reloadAllTimelines() after
+      # mutations; harmless to link from the app process too, and needed so
+      # Phase 5's widget-process consumers of this same framework build.
+      - sdk: WidgetKit.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder.kit
@@ -66,6 +70,10 @@ targets:
           - UIInterfaceOrientationPortrait
         NSRemindersFullAccessUsageDescription: "Calenminder shows today's tasks alongside your calendar and completes them when you tap them, so it needs full access to your Reminders."
         NSCalendarsFullAccessUsageDescription: "Calenminder shows and edits your Apple Calendar events in one agenda, so it needs full access to your Calendars."
+        CFBundleURLTypes:
+          - CFBundleURLName: com.enzonaut.calenminder
+            CFBundleURLSchemes:
+              - calenminder
     entitlements:
       path: Calenminder/Calenminder.entitlements
       properties:

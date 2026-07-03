@@ -5,7 +5,7 @@ SIMULATOR_NAME := iPhone 17 Pro
 # Reminders store (DW-3.2, DW-3.3). Per docs/code-standards.md Testing
 # Patterns they stay out of the default `make test` run and are run
 # separately, serially, via `make test-integration`.
-INTEGRATION_SUITES := CalenminderTests/EventKitEventStoreIntegrationTests CalenminderTests/ReminderTaskStoreIntegrationTests
+INTEGRATION_SUITES := CalenminderTests/EventKitEventStoreIntegrationTests CalenminderTests/ReminderTaskStoreIntegrationTests CalenminderTests/AgendaServiceIntegrationTests
 SKIP_INTEGRATION := $(foreach s,$(INTEGRATION_SUITES),-skip-testing:$(s))
 ONLY_INTEGRATION := $(foreach s,$(INTEGRATION_SUITES),-only-testing:$(s))
 

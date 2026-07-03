@@ -2,7 +2,7 @@
 **Created:** 2026-07-03
 **Status:** in-progress
 **Started:** 2026-07-03 (feature branch: feature/calenminder-v1)
-**Current Phase:** 3
+**Current Phase:** 4
 **Complexity:** medium
 ---
 ## Context
@@ -264,6 +264,13 @@ Summary: 5-target Xcode workspace (app, CalenminderKit shared framework, Calenmi
 - [x] Committed
 Commit: 37322f3
 Summary: Pure Domain layer in CalenminderKit/Domain/ - Event/DayTask models (task type deliberately spelled DayTask to dodge _Concurrency.Task), DayStamp/DayWindow civil-date types, the pinned EventStoring/TaskStoring protocols exactly as planned, and assembleAgenda with AgendaFilter.agenda/.widget; 44/44 tests green, import boundary enforced by in-suite scan + scripts/check-domain-imports.sh.
+
+### Phase 3: EventKit stores (Gate: Standard)
+- [x] BUILD: Discovery + design + implementation (stub -> implement -> validate) complete
+- [x] REVIEW: Verification passed
+- [x] Committed
+Commit: 1cf1bad
+Summary: EventKitEventStore + ReminderTaskStore implement the Domain protocols verbatim over an internal DTO provider seam (fixture-testable); durable refs are (externalIdentifier, occurrenceDate); 78 unit + 5 integration tests green; assumption settled: EventKit auto-advances completed recurring reminders, so setCompleted is a pass-through (no app-side rollover).
 
 ### Phase 1 details (2026-07-03)
 
