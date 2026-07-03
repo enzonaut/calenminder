@@ -2,7 +2,7 @@
 **Created:** 2026-07-03
 **Status:** in-progress
 **Started:** 2026-07-03 (feature branch: feature/calenminder-v1)
-**Current Phase:** 2
+**Current Phase:** 3
 **Complexity:** medium
 ---
 ## Context
@@ -257,6 +257,13 @@ Manual (device):
 - [x] Committed
 Commit: e8ad2c6
 Summary: 5-target Xcode workspace (app, CalenminderKit shared framework, CalenminderIntents, widget extension, Swift Testing tests) builds and tests green via XcodeGen/Makefile; spike verdict widgetCanWriteReminders: true (widget Button(intent:) completes an EKReminder), with the constraint that widget-invoked intents must be declared inside the widget target, not a shared framework.
+
+### Phase 2: Domain core (Gate: Full)
+- [x] BUILD: Discovery + design + implementation (stub -> implement -> validate) complete
+- [x] REVIEW: Verification passed
+- [x] Committed
+Commit: 37322f3
+Summary: Pure Domain layer in CalenminderKit/Domain/ - Event/DayTask models (task type deliberately spelled DayTask to dodge _Concurrency.Task), DayStamp/DayWindow civil-date types, the pinned EventStoring/TaskStoring protocols exactly as planned, and assembleAgenda with AgendaFilter.agenda/.widget; 44/44 tests green, import boundary enforced by in-suite scan + scripts/check-domain-imports.sh.
 
 ### Phase 1 details (2026-07-03)
 
