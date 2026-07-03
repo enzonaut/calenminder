@@ -183,6 +183,63 @@ public final class AgendaService {
         widgetReloader.reloadAllTimelines()
     }
 
+    // PSEUDOCODE: completeTask(externalIdentifier:referenceDay:)
+    //   However this returns, reload widget timelines afterward (unlike the
+    //   mutations above, this must happen even on the no-op path - that
+    //   reload is what corrects a stale cached row, DW-5.5).
+    //   Try to resolve a DayTask for externalIdentifier anchored at
+    //   referenceDay; if resolution fails or finds nothing, or the task is
+    //   already completed -> no-op, return false.
+    //   Otherwise try to mark it completed; on success return true, on any
+    //   thrown error (e.g. deleted underneath) -> no-op, return false.
+
+    /// Completes a task by durable identifier alone, for the widget's
+    /// button-driven `CompleteTaskIntent` (Phase 5), which only ever has a
+    /// task ID - not a full `DayTask` snapshot - to act on.
+    ///
+    /// Graceful by design (DW-5.5): a stale cached timeline row can point at
+    /// a task that was deleted or already completed by another client (the
+    /// app, the Reminders app, another device) since the timeline entry was
+    /// generated. Neither case is an error the widget process has anywhere
+    /// to show - both become a silent no-op. Unlike every other mutation
+    /// above (which only reloads *after* a successful store call, since a
+    /// failed mutation changed nothing worth re-rendering), this always
+    /// reloads: the entire point of reloading here is to correct the stale
+    /// cache the no-op itself revealed. An unexpected store failure (e.g.
+    /// `itemDeletedUnderneath`) is swallowed into the same no-op rather than
+    /// propagated, for the same reason an App Intent's `perform()` throwing
+    /// produces a system error alert - worse than doing nothing and letting
+    /// the reload show reality.
+    ///
+    /// Returns whether a real completion happened, for tests; the intent
+    /// itself discards this (it must never surface success/failure as a
+    /// dialog either way).
+    @discardableResult
+    public func completeTask(externalIdentifier: String, referenceDay: DayStamp) async -> Bool {
+        defer { widgetReloader.reloadAllTimelines() }
+        guard
+            let task = try? await resolveTask(externalIdentifier: externalIdentifier, referenceDay: referenceDay),
+            !task.isCompleted
+        else { return false }
+        do {
+            try await taskStore.setCompleted(task, true)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    /// Requests a widget-timeline reload with no accompanying store
+    /// mutation - Phase 5's "reload triggers: app foreground" (see
+    /// `AgendaViewModel.handleForeground()`). A foreground is not itself a
+    /// mutation, but the widget's cached timeline is most likely stale right
+    /// then (backgrounded overnight, a task completed elsewhere while away),
+    /// so the app nudges a reload explicitly rather than relying only on
+    /// WidgetKit's own reload budget.
+    public func reloadWidgets() {
+        widgetReloader.reloadAllTimelines()
+    }
+
     // MARK: - Calendar visibility
 
     public func calendars() async throws -> [EventCalendarInfo] {

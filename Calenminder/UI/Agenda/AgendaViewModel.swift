@@ -233,6 +233,10 @@ final class AgendaViewModel: ObservableObject {
     func handleForeground() async {
         resetToTodayIfFollowing()
         await load()
+        // Phase 5 reload trigger: "app foreground" - see
+        // `AgendaService.reloadWidgets()`'s doc comment for why this is
+        // nudged explicitly rather than left to WidgetKit's own budget.
+        agendaService.reloadWidgets()
     }
 
     /// Midnight rollover while the app stays foregrounded: the system posts

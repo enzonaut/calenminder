@@ -195,4 +195,72 @@ struct AgendaServiceTests {
         service.setCalendarVisible(false, calendarIdentifier: "x")
         #expect(visibility.isVisible(calendarIdentifier: "x") == false)
     }
+
+    // MARK: - Phase 5: completeTask(externalIdentifier:referenceDay:) (DW-5.2, DW-5.5)
+
+    @Test("DW-5.2: completeTask marks a real task completed and reloads the widget")
+    func test_DW_5_2_completeTaskMarksTaskCompletedAndReloads() async throws {
+        let tasks = FakeTaskStore()
+        tasks.tasks = [Fixture.task(id: "t1", due: today)]
+        let reloader = FakeWidgetReloader()
+        let service = makeService(tasks: tasks, reloader: reloader)
+
+        let completed = await service.completeTask(externalIdentifier: "t1", referenceDay: today)
+
+        #expect(completed == true)
+        #expect(tasks.completionCalls.map(\.0.externalIdentifier) == ["t1"])
+        #expect(tasks.completionCalls.map(\.1) == [true])
+        #expect(reloader.reloadCount == 1)
+    }
+
+    @Test("DW-5.5: completeTask on an unknown task id is a graceful no-op that still reloads")
+    func test_DW_5_5_completeTaskUnknownIdIsNoOpAndReloads() async throws {
+        let tasks = FakeTaskStore()
+        let reloader = FakeWidgetReloader()
+        let service = makeService(tasks: tasks, reloader: reloader)
+
+        let completed = await service.completeTask(externalIdentifier: "does-not-exist", referenceDay: today)
+
+        #expect(completed == false)
+        #expect(tasks.completionCalls.isEmpty)
+        #expect(reloader.reloadCount == 1)
+    }
+
+    @Test("DW-5.5: completeTask on an already-completed task id is a graceful no-op that still reloads")
+    func test_DW_5_5_completeTaskAlreadyCompletedIdIsNoOpAndReloads() async throws {
+        let tasks = FakeTaskStore()
+        tasks.tasks = [Fixture.task(id: "t1", due: today, completed: true)]
+        let reloader = FakeWidgetReloader()
+        let service = makeService(tasks: tasks, reloader: reloader)
+
+        let completed = await service.completeTask(externalIdentifier: "t1", referenceDay: today)
+
+        #expect(completed == false)
+        #expect(tasks.completionCalls.isEmpty, "an already-completed task must not be re-saved")
+        #expect(reloader.reloadCount == 1)
+    }
+
+    @Test("DW-5.5: completeTask swallows a store failure (e.g. deleted underneath) into a graceful no-op that still reloads")
+    func test_DW_5_5_storeThrowDuringCompleteIsNoOpAndReloads() async throws {
+        let tasks = FakeTaskStore()
+        tasks.tasks = [Fixture.task(id: "t1", due: today)]
+        tasks.setCompletedError = CalendarStoreError.itemDeletedUnderneath
+        let reloader = FakeWidgetReloader()
+        let service = makeService(tasks: tasks, reloader: reloader)
+
+        let completed = await service.completeTask(externalIdentifier: "t1", referenceDay: today)
+
+        #expect(completed == false)
+        #expect(reloader.reloadCount == 1)
+    }
+
+    @Test("Phase 5: reloadWidgets() triggers a widget reload with no store call")
+    func test_reloadWidgetsTriggersReload() async throws {
+        let reloader = FakeWidgetReloader()
+        let service = makeService(reloader: reloader)
+
+        service.reloadWidgets()
+
+        #expect(reloader.reloadCount == 1)
+    }
 }

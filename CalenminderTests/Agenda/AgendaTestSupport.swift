@@ -63,6 +63,12 @@ final class FakeTaskStore: TaskStoring {
     var tasks: [DayTask] = []
     var addResult: Result<DayTask, Error>?
     var setCompletedError: Error?
+    /// Thrown by both fetch methods below, mirroring `FakeEventStore.fetchError`
+    /// - lets tests simulate a Reminders-access-denied (or any other) fetch
+    /// failure, which `FakeTaskStore` had no way to model before Phase 5
+    /// needed to exercise `WidgetContentLoader`'s `.remindersAccessDenied`
+    /// mapping path.
+    var fetchError: Error?
     private(set) var addedDrafts: [TaskDraft] = []
     private(set) var completionCalls: [(DayTask, Bool)] = []
 
@@ -78,11 +84,13 @@ final class FakeTaskStore: TaskStoring {
     func fireChange() { continuation.yield(()) }
 
     func tasks(dueOn day: DayStamp, includeCompleted: Bool) async throws -> [DayTask] {
-        tasks.filter { $0.dueDay == day && (includeCompleted || !$0.isCompleted) }
+        if let fetchError { throw fetchError }
+        return tasks.filter { $0.dueDay == day && (includeCompleted || !$0.isCompleted) }
     }
 
     func incompleteTasks(overdueAsOf day: DayStamp) async throws -> [DayTask] {
-        tasks.filter { $0.dueDay <= day && !$0.isCompleted }
+        if let fetchError { throw fetchError }
+        return tasks.filter { $0.dueDay <= day && !$0.isCompleted }
     }
 
     func add(_ draft: TaskDraft) async throws -> DayTask {

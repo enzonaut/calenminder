@@ -2,7 +2,7 @@
 **Created:** 2026-07-03
 **Status:** in-progress
 **Started:** 2026-07-03 (feature branch: feature/calenminder-v1)
-**Current Phase:** 4
+**Current Phase:** 5
 **Complexity:** medium
 ---
 ## Context
@@ -271,6 +271,13 @@ Summary: Pure Domain layer in CalenminderKit/Domain/ - Event/DayTask models (tas
 - [x] Committed
 Commit: 1cf1bad
 Summary: EventKitEventStore + ReminderTaskStore implement the Domain protocols verbatim over an internal DTO provider seam (fixture-testable); durable refs are (externalIdentifier, occurrenceDate); 78 unit + 5 integration tests green; assumption settled: EventKit auto-advances completed recurring reminders, so setCompleted is a pass-through (no app-side rollover).
+
+### Phase 4: Agenda service + app UI (Gate: Full, security-sensitive)
+- [x] BUILD: Discovery + design + implementation (stub -> implement -> validate) complete
+- [x] REVIEW: 3-sample majority PASS; sample 2 FAIL (midnight rollover while foregrounded unhandled) -> fixed (isFollowingToday + NSCalendarDayChanged in AgendaViewModel, 5 new tests) -> re-verified PASS (unanimous)
+- [x] Committed
+Commit: a951615
+Summary: AgendaService.agenda(for:filter:) in CalenminderKit/Agenda/ is the single read path (assembly, filters, change-stream merge, widget reloads); full app UI shipped (agenda, event detail/edit with spans, tasks, calendar toggles, onboarding, defensively parsed calenminder:// deep links); AgendaViewModel owns optimistic rollback and follows today across midnight; 158 unit + 9 integration tests green.
 
 ### Phase 1 details (2026-07-03)
 

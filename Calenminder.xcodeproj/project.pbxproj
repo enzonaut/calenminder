@@ -16,8 +16,6 @@
 		1BD18609C8C97ADBA7C15288 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31159B82D492ACEACC43DDFE /* SwiftUI.framework */; };
 		1FC1596DDAC8D9AAD9898C44 /* EventEditViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B62CB108BBFF3918E1D10839 /* EventEditViewModel.swift */; };
 		20FB2AD0F6AD734ED14B16AE /* DayTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE381E0C27D1CBF63ECCF05 /* DayTask.swift */; };
-		212CD092FDD835D37A5E18EF /* WidgetSpikeCompleteIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BDD962E023F35E48523003 /* WidgetSpikeCompleteIntent.swift */; };
-		244CB47FB9D9F8D94E391A8D /* CompleteSpikeReminderIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C07D80F0830D1BD185A3D5A /* CompleteSpikeReminderIntent.swift */; };
 		24643A75870CAB6AC8547206 /* CalenminderIntents.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 93D975347A10FA4663D1366A /* CalenminderIntents.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2793E8967665F9EC27F12591 /* DeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E979C631C552031BBEBABF /* DeepLinkRouter.swift */; };
 		288F86BEA3FDB5ACD76FD6A4 /* AgendaViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799BDC66BC74697F616D5F37 /* AgendaViewModelTests.swift */; };
@@ -25,20 +23,23 @@
 		2B9AC0C0B2860425892F2943 /* ReminderProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA91253125F8913ABA10C8A /* ReminderProviding.swift */; };
 		2C14117A62E0DB179FF3471D /* ViewSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3786BAB372AE8B71168476A4 /* ViewSmokeTests.swift */; };
 		2CFE6C99234B48607A8CB176 /* CalenminderIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93D975347A10FA4663D1366A /* CalenminderIntents.framework */; };
-		2DE38DD00AB1B94ED8DF4BD2 /* SpikeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390139AF48D423E6A18ABD8 /* SpikeWidget.swift */; };
 		32F619723DB4B623DBF3C10C /* EventKitEventStoreIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60F6CE095DC31D3C5AA3964 /* EventKitEventStoreIntegrationTests.swift */; };
 		351C438AECC54F7C9095A284 /* EventKitEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87B3A5BD37ECDD558E3C2603 /* EventKitEventStore.swift */; };
 		362F3AB99B03AF76B37A3481 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58D832B2EECFF9CFBF6C6CDF /* ContentView.swift */; };
+		3677F5FFB27DDD66EE5EE594 /* WidgetViewSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68C0D85FA7FB82C9A37E3067 /* WidgetViewSmokeTests.swift */; };
 		3714565E130F95DE827E76D8 /* TaskDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E28C3D9E1E91389985803A /* TaskDetailViewModelTests.swift */; };
 		3A9EEF69308B829BC2C2A3B6 /* AppGroupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CEB1DA9036F51E73EF3FAAF /* AppGroupTests.swift */; };
 		3B1582CC4BB804D500545100 /* CalenminderKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2E6710A11840317A58AADFB9 /* CalenminderKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3B260C2D07FB5F08627ED817 /* CalenminderIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93D975347A10FA4663D1366A /* CalenminderIntents.framework */; };
-		3D4F7EA21C5EC75582989FDC /* CompleteSpikeReminderIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C56C3871BB5AC732F0700D /* CompleteSpikeReminderIntentTests.swift */; };
+		3C6B73825B825861DBF9B905 /* WidgetAgendaEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F95C2EDDFC5CE6F1BA3CFC /* WidgetAgendaEntry.swift */; };
 		4039BB46EF8F6DB389128ED0 /* CalenminderWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D881E1D6573EFC205CF0EE84 /* CalenminderWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		439BE99E37646D3B38636340 /* StoreTestTags.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA68BC824A6D4A05EE17C331 /* StoreTestTags.swift */; };
 		4456CC9812E4346949184C8C /* TaskComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549A142C068E8B91608B3290 /* TaskComposerView.swift */; };
+		4493E5234F2AA81047772DB9 /* AgendaWidgetEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03259BEE04444A0969616DA /* AgendaWidgetEntryView.swift */; };
 		4BDD916A1FB430E0BBA26B6F /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1520D5C8312D321674B5C607 /* AppGroup.swift */; };
 		4BE56604C5DE37E013C43375 /* DayStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C852280D480BC25E5F4B45F /* DayStamp.swift */; };
+		4CD7DA2745A7C72E594C9B40 /* CompleteTaskIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE383F89FFED6131AE9665D9 /* CompleteTaskIntent.swift */; };
+		513BC4E789AF8467F4E33C43 /* WidgetAgendaViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BDE93943B7FCFC8628DDCEF /* WidgetAgendaViews.swift */; };
 		530556D1870F8C9BF6C11745 /* CalendarVisibilityViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7E1B77F5019E0C9C2C0C106 /* CalendarVisibilityViewModelTests.swift */; };
 		5693557A789E34802E686DE3 /* ErrorPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBE1B1D751E7FF1D6E0A219 /* ErrorPresentation.swift */; };
 		5F52E4E6143FFB5C805B637A /* AgendaTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BDA9B88B47F91C292C6E12A /* AgendaTestSupport.swift */; };
@@ -47,6 +48,7 @@
 		66396CC4C2A1F986B15F839F /* AgendaViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7850370B27845555493DD7FB /* AgendaViewModel.swift */; };
 		66CA078284C21F262640F42A /* AgendaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7291E3C006223D252F39AD93 /* AgendaView.swift */; };
 		68DAB3FCD5A4BAA11E25851C /* DomainModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E87C915F54A0FC0C96341C1D /* DomainModelTests.swift */; };
+		690F520AA08AC777CCE43F27 /* WidgetEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8800C591252540DE3AE48BE1 /* WidgetEnvironment.swift */; };
 		6E3088A93B04227DC830E8A9 /* DeepLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EF580918D0CE082BCC13DD /* DeepLinkTests.swift */; };
 		6EA6DAC47306895082BE4DBF /* ReminderTaskStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D60827FB2F6A25FBAF87C7 /* ReminderTaskStore.swift */; };
 		705F81CB3DE5949958A221C8 /* CalenminderIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93D975347A10FA4663D1366A /* CalenminderIntents.framework */; };
@@ -63,6 +65,7 @@
 		7D0FDFDAC445C880A03F0FC3 /* EventEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 078CFDF19FCE00D822F472EB /* EventEditView.swift */; };
 		7D48B59AB0924E838DF82CDA /* DayStampTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83938A2DA0223160A75E2887 /* DayStampTests.swift */; };
 		7D8F3FCD2D96598E46125F58 /* AgendaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26BB9CF095C1D21CA4672154 /* AgendaService.swift */; };
+		7EE6EB8751BC75CD453BABF6 /* WidgetTimelineAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2B0498AE41FF67B04CDE68 /* WidgetTimelineAssembly.swift */; };
 		82EA3846811A9723A13EB61F /* CalendarStoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A926CB785CC763B113FFC662 /* CalendarStoreError.swift */; };
 		85C35CB1F3ABF152436351FB /* TaskComposerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6042F5618FA000108C484BF0 /* TaskComposerViewModel.swift */; };
 		87C37F493323E3C0A820C43C /* ParticipationFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4270A122C6F1983AA1AC2B5E /* ParticipationFilterTests.swift */; };
@@ -74,8 +77,10 @@
 		94835F80AAC2837D9887EBFD /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56172761E8FCEA6F8CEF68A0 /* EventDetailView.swift */; };
 		9B1F40562902EC9227AA06D3 /* CalenminderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9940484BDEECD37D710F50C7 /* CalenminderApp.swift */; };
 		9DF5E769DA15775D760278B8 /* AgendaServiceIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3B23ED32AAB01DA74B3F4C2 /* AgendaServiceIntegrationTests.swift */; };
+		9EB51E0BF9F6E83FAF03DBEA /* WidgetContentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A15E219365CD670B9317BCF /* WidgetContentLoader.swift */; };
 		9F6C4CB41C05EB2AF87E8502 /* CalenminderKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E6710A11840317A58AADFB9 /* CalenminderKit.framework */; };
 		A499FCD778A002D1DCC5C694 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA2A52086D3F9A74E9AAF7D /* Event.swift */; };
+		A7CDD2B63DEFAF1D17B71B93 /* CalenminderIntentsPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5499DB9CCE2663827829221 /* CalenminderIntentsPlaceholder.swift */; };
 		A817188B6AD4286AE2D2443F /* EventKitIntegrationSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3FE09A1CE994DDAD11683DE /* EventKitIntegrationSupport.swift */; };
 		A9A46068827EA640C3E65647 /* EventKitEventStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECD60890713DDC282E2119C2 /* EventKitEventStoreTests.swift */; };
 		ABD08426974674942312B2F3 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB80C3A3C38BB5E046BC094 /* AppEnvironment.swift */; };
@@ -87,15 +92,19 @@
 		C059774CAC5EC291DEC50D95 /* CalenminderKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E6710A11840317A58AADFB9 /* CalenminderKit.framework */; };
 		CBD5D66E760071A4C3B78A1F /* CalenminderKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E6710A11840317A58AADFB9 /* CalenminderKit.framework */; };
 		CC58C0DA387B345A073670CB /* EventKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25EC58DD01FD3E5396199CBA /* EventKit.framework */; };
+		CDFED73AFBB2A5271B5F47A9 /* WidgetTimelineAssemblyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A06642C4E5A3AF88E0CCA9AB /* WidgetTimelineAssemblyTests.swift */; };
 		D4284CFBF35E6053B1438F7D /* SpikeConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B04114D373B77A287FC054B /* SpikeConfig.swift */; };
+		DE034B3CC63EB3A4E2B3A5CF /* WidgetContentLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77939D0676B9FE63D74060DD /* WidgetContentLoaderTests.swift */; };
 		E1A099A4569C803FD033DB77 /* CalendarVisibilityStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 627538A98B578D3F3D2B2CE2 /* CalendarVisibilityStoreTests.swift */; };
 		E53B4197683CF41D46FE79EA /* CalendarVisibilityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18D28D063A1C3F7A26F77772 /* CalendarVisibilityStore.swift */; };
 		E65E81A224569F3BC7A3E1B0 /* InfoPlistUsageDescriptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D42A54C32BEA477DCED85C /* InfoPlistUsageDescriptionTests.swift */; };
 		E84B0FC28E48FA20AFE31ED2 /* CalenminderKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E6710A11840317A58AADFB9 /* CalenminderKit.framework */; };
 		E907BC551A95E012D3D1BE1C /* TaskDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC21155A0AC71E4A5B36347 /* TaskDetailViewModel.swift */; };
+		E9E76FA7D0C00BF6AF70076E /* AddTaskControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1C2F94413D97E7F6BC2FAC /* AddTaskControl.swift */; };
 		E9F70D179D23D0ABB6938579 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9CDB8A1715C7B18F577924E8 /* WidgetKit.framework */; };
 		EB72E76EC9E53384307A81DA /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9CDB8A1715C7B18F577924E8 /* WidgetKit.framework */; };
 		EC21FBB3993A136249D7A79B /* EventProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 143D479AA1E6055A78CD6654 /* EventProviding.swift */; };
+		ED862BDCF020DFCBB426549B /* AgendaWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41FF8E79933E5AE38F8D698A /* AgendaWidget.swift */; };
 		EED1B2E508D6E50F731BF96C /* DeepLinkRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3913843E759AEC1DC21A99D1 /* DeepLinkRouterTests.swift */; };
 		EFC3BA32A60AFB4188E15178 /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63993F9130B609C01120FCE6 /* AppIntents.framework */; };
 		F062CD326B9C85A38413179A /* EventKitRecurrenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A569FB9A74A6437A1A41EFE2 /* EventKitRecurrenceTests.swift */; };
@@ -224,18 +233,20 @@
 
 /* Begin PBXFileReference section */
 		011003FDCD8A05610C5F5703 /* CalenminderWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalenminderWidgetBundle.swift; sourceTree = "<group>"; };
+		04F95C2EDDFC5CE6F1BA3CFC /* WidgetAgendaEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetAgendaEntry.swift; sourceTree = "<group>"; };
 		078CFDF19FCE00D822F472EB /* EventEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditView.swift; sourceTree = "<group>"; };
 		10EACC6048B7DCDA2FA9386A /* ReminderTaskStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderTaskStoreTests.swift; sourceTree = "<group>"; };
-		1390139AF48D423E6A18ABD8 /* SpikeWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeWidget.swift; sourceTree = "<group>"; };
 		143D479AA1E6055A78CD6654 /* EventProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventProviding.swift; sourceTree = "<group>"; };
 		1520D5C8312D321674B5C607 /* AppGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroup.swift; sourceTree = "<group>"; };
 		168A8BA06DBC45E16DE7B6DF /* EventDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailViewModel.swift; sourceTree = "<group>"; };
 		18D28D063A1C3F7A26F77772 /* CalendarVisibilityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityStore.swift; sourceTree = "<group>"; };
+		1A15E219365CD670B9317BCF /* WidgetContentLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetContentLoader.swift; sourceTree = "<group>"; };
 		221F35E2198B5A9F96E02D8A /* DayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayWindow.swift; sourceTree = "<group>"; };
 		25EC58DD01FD3E5396199CBA /* EventKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKit.framework; path = System/Library/Frameworks/EventKit.framework; sourceTree = SDKROOT; };
 		26BB9CF095C1D21CA4672154 /* AgendaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaService.swift; sourceTree = "<group>"; };
 		2960B584E9D7D54F68755986 /* ReminderTaskStoreIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderTaskStoreIntegrationTests.swift; sourceTree = "<group>"; };
 		2CFD33E752E0554E820971B4 /* CalendarVisibilityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityViewModel.swift; sourceTree = "<group>"; };
+		2D1C2F94413D97E7F6BC2FAC /* AddTaskControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskControl.swift; sourceTree = "<group>"; };
 		2E6710A11840317A58AADFB9 /* CalenminderKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CalenminderKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		31159B82D492ACEACC43DDFE /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		3274C58E09072FB7CFAFDFBC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -245,12 +256,12 @@
 		3F1FC11CF06CB7EAFF212E07 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
 		3FA91253125F8913ABA10C8A /* ReminderProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderProviding.swift; sourceTree = "<group>"; };
 		41679B069A1129FF17C71202 /* AgendaAssemblyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaAssemblyTests.swift; sourceTree = "<group>"; };
+		41FF8E79933E5AE38F8D698A /* AgendaWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaWidget.swift; sourceTree = "<group>"; };
 		4270A122C6F1983AA1AC2B5E /* ParticipationFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipationFilterTests.swift; sourceTree = "<group>"; };
 		43A7871DA9DE44DF38BFFB9A /* EventCalendarDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventCalendarDirectory.swift; sourceTree = "<group>"; };
 		48204915D21008A92790F7C6 /* TaskComposerViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskComposerViewModelTests.swift; sourceTree = "<group>"; };
 		4B39129EBD4B9D266A0D6396 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4D0C10A94124669074A4E7EF /* EventCalendarInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventCalendarInfo.swift; sourceTree = "<group>"; };
-		51BDD962E023F35E48523003 /* WidgetSpikeCompleteIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSpikeCompleteIntent.swift; sourceTree = "<group>"; };
 		53E8A3945B8A8106B0F337DD /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
 		549A142C068E8B91608B3290 /* TaskComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskComposerView.swift; sourceTree = "<group>"; };
 		56172761E8FCEA6F8CEF68A0 /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
@@ -260,7 +271,9 @@
 		627538A98B578D3F3D2B2CE2 /* CalendarVisibilityStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityStoreTests.swift; sourceTree = "<group>"; };
 		63993F9130B609C01120FCE6 /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
 		66A63197F169FCA58D221834 /* Agenda.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Agenda.swift; sourceTree = "<group>"; };
+		68C0D85FA7FB82C9A37E3067 /* WidgetViewSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetViewSmokeTests.swift; sourceTree = "<group>"; };
 		6AA2A52086D3F9A74E9AAF7D /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
+		6BDE93943B7FCFC8628DDCEF /* WidgetAgendaViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetAgendaViews.swift; sourceTree = "<group>"; };
 		6BFA7606306107BEACD33949 /* ProviderError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderError.swift; sourceTree = "<group>"; };
 		6C852280D480BC25E5F4B45F /* DayStamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStamp.swift; sourceTree = "<group>"; };
 		6DE381E0C27D1CBF63ECCF05 /* DayTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTask.swift; sourceTree = "<group>"; };
@@ -268,15 +281,17 @@
 		742484A83613FE15ADD72463 /* EventKitRecurrence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitRecurrence.swift; sourceTree = "<group>"; };
 		74DC772E9010F6805B7F24CB /* FixtureCalendarProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureCalendarProvider.swift; sourceTree = "<group>"; };
 		771DD82680422AB7E5853D7D /* OnboardingViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModelTests.swift; sourceTree = "<group>"; };
+		77939D0676B9FE63D74060DD /* WidgetContentLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetContentLoaderTests.swift; sourceTree = "<group>"; };
 		7850370B27845555493DD7FB /* AgendaViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaViewModel.swift; sourceTree = "<group>"; };
 		78CBC4D0051EBE18CF58D030 /* EventEditViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditViewModelTests.swift; sourceTree = "<group>"; };
 		799BDC66BC74697F616D5F37 /* AgendaViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaViewModelTests.swift; sourceTree = "<group>"; };
-		7C07D80F0830D1BD185A3D5A /* CompleteSpikeReminderIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteSpikeReminderIntent.swift; sourceTree = "<group>"; };
+		7C2B0498AE41FF67B04CDE68 /* WidgetTimelineAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetTimelineAssembly.swift; sourceTree = "<group>"; };
 		817A374FCADE201A564E75FF /* Stores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stores.swift; sourceTree = "<group>"; };
 		83938A2DA0223160A75E2887 /* DayStampTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStampTests.swift; sourceTree = "<group>"; };
 		83BC684A664D2C7CF5D05656 /* DeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLink.swift; sourceTree = "<group>"; };
 		84E28C3D9E1E91389985803A /* TaskDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailViewModelTests.swift; sourceTree = "<group>"; };
 		87B3A5BD37ECDD558E3C2603 /* EventKitEventStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitEventStore.swift; sourceTree = "<group>"; };
+		8800C591252540DE3AE48BE1 /* WidgetEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetEnvironment.swift; sourceTree = "<group>"; };
 		8CEB1DA9036F51E73EF3FAAF /* AppGroupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupTests.swift; sourceTree = "<group>"; };
 		8EBE1B1D751E7FF1D6E0A219 /* ErrorPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorPresentation.swift; sourceTree = "<group>"; };
 		92D42A54C32BEA477DCED85C /* InfoPlistUsageDescriptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoPlistUsageDescriptionTests.swift; sourceTree = "<group>"; };
@@ -287,6 +302,7 @@
 		9BB80C3A3C38BB5E046BC094 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		9BDA9B88B47F91C292C6E12A /* AgendaTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaTestSupport.swift; sourceTree = "<group>"; };
 		9CDB8A1715C7B18F577924E8 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		A06642C4E5A3AF88E0CCA9AB /* WidgetTimelineAssemblyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetTimelineAssemblyTests.swift; sourceTree = "<group>"; };
 		A46189DDB4BF2B8C59E214B1 /* CalenminderWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CalenminderWidget.entitlements; sourceTree = "<group>"; };
 		A569FB9A74A6437A1A41EFE2 /* EventKitRecurrenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitRecurrenceTests.swift; sourceTree = "<group>"; };
 		A926CB785CC763B113FFC662 /* CalendarStoreError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarStoreError.swift; sourceTree = "<group>"; };
@@ -295,12 +311,12 @@
 		B60F6CE095DC31D3C5AA3964 /* EventKitEventStoreIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitEventStoreIntegrationTests.swift; sourceTree = "<group>"; };
 		B62CB108BBFF3918E1D10839 /* EventEditViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditViewModel.swift; sourceTree = "<group>"; };
 		B98576812757C5C0C1440412 /* DayWindowMembershipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayWindowMembershipTests.swift; sourceTree = "<group>"; };
+		BE383F89FFED6131AE9665D9 /* CompleteTaskIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteTaskIntent.swift; sourceTree = "<group>"; };
 		C3B23ED32AAB01DA74B3F4C2 /* AgendaServiceIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaServiceIntegrationTests.swift; sourceTree = "<group>"; };
 		C3FE09A1CE994DDAD11683DE /* EventKitIntegrationSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitIntegrationSupport.swift; sourceTree = "<group>"; };
 		C440FFC7D1517830E9187CD5 /* RawRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawRecords.swift; sourceTree = "<group>"; };
 		C531F577EDC69CC434DBD6F5 /* CalenminderTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CalenminderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7E1B77F5019E0C9C2C0C106 /* CalendarVisibilityViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityViewModelTests.swift; sourceTree = "<group>"; };
-		C8C56C3871BB5AC732F0700D /* CompleteSpikeReminderIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteSpikeReminderIntentTests.swift; sourceTree = "<group>"; };
 		CB22E7335E6BE65CB98D475D /* DomainImportBoundaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainImportBoundaryTests.swift; sourceTree = "<group>"; };
 		CEF451B885C374915EDE4066 /* EventDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailViewModelTests.swift; sourceTree = "<group>"; };
 		CFE5AEF1A2C48E4F8704F54C /* SystemCalendarProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemCalendarProvider.swift; sourceTree = "<group>"; };
@@ -309,11 +325,13 @@
 		D7EF580918D0CE082BCC13DD /* DeepLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkTests.swift; sourceTree = "<group>"; };
 		D881E1D6573EFC205CF0EE84 /* CalenminderWidgetExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = CalenminderWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA68BC824A6D4A05EE17C331 /* StoreTestTags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreTestTags.swift; sourceTree = "<group>"; };
+		E03259BEE04444A0969616DA /* AgendaWidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaWidgetEntryView.swift; sourceTree = "<group>"; };
 		E36A340CCC015EBC4D347B11 /* AgendaServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaServiceTests.swift; sourceTree = "<group>"; };
 		E87C915F54A0FC0C96341C1D /* DomainModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainModelTests.swift; sourceTree = "<group>"; };
 		ECD60890713DDC282E2119C2 /* EventKitEventStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitEventStoreTests.swift; sourceTree = "<group>"; };
 		F2ABB0B2959A8D572ED91B57 /* CalendarVisibilityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarVisibilityView.swift; sourceTree = "<group>"; };
 		F38A24740477ED561C0A466F /* NotFoundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotFoundView.swift; sourceTree = "<group>"; };
+		F5499DB9CCE2663827829221 /* CalenminderIntentsPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalenminderIntentsPlaceholder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -457,12 +475,12 @@
 			isa = PBXGroup;
 			children = (
 				8CEB1DA9036F51E73EF3FAAF /* AppGroupTests.swift */,
-				C8C56C3871BB5AC732F0700D /* CompleteSpikeReminderIntentTests.swift */,
 				92D42A54C32BEA477DCED85C /* InfoPlistUsageDescriptionTests.swift */,
 				C0CBDF752F8E08195B67E0D1 /* Agenda */,
 				0430343EE8AA1ACAC6663BC2 /* Domain */,
 				E7EED3648E09E6192FC64E29 /* Store */,
 				DE412273BD91CCE401B86D05 /* UI */,
+				F3D5323A1AD47A9E68F64145 /* Widget */,
 			);
 			path = CalenminderTests;
 			sourceTree = "<group>";
@@ -511,11 +529,14 @@
 		A4F71E7748B99B868515B1A3 /* CalenminderWidget */ = {
 			isa = PBXGroup;
 			children = (
+				2D1C2F94413D97E7F6BC2FAC /* AddTaskControl.swift */,
+				41FF8E79933E5AE38F8D698A /* AgendaWidget.swift */,
+				E03259BEE04444A0969616DA /* AgendaWidgetEntryView.swift */,
 				A46189DDB4BF2B8C59E214B1 /* CalenminderWidget.entitlements */,
 				011003FDCD8A05610C5F5703 /* CalenminderWidgetBundle.swift */,
+				BE383F89FFED6131AE9665D9 /* CompleteTaskIntent.swift */,
 				4B39129EBD4B9D266A0D6396 /* Info.plist */,
-				1390139AF48D423E6A18ABD8 /* SpikeWidget.swift */,
-				51BDD962E023F35E48523003 /* WidgetSpikeCompleteIntent.swift */,
+				8800C591252540DE3AE48BE1 /* WidgetEnvironment.swift */,
 			);
 			path = CalenminderWidget;
 			sourceTree = "<group>";
@@ -544,6 +565,17 @@
 				817A374FCADE201A564E75FF /* Stores.swift */,
 			);
 			path = Domain;
+			sourceTree = "<group>";
+		};
+		BEDFAC8F603220694CAA91D6 /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				04F95C2EDDFC5CE6F1BA3CFC /* WidgetAgendaEntry.swift */,
+				6BDE93943B7FCFC8628DDCEF /* WidgetAgendaViews.swift */,
+				1A15E219365CD670B9317BCF /* WidgetContentLoader.swift */,
+				7C2B0498AE41FF67B04CDE68 /* WidgetTimelineAssembly.swift */,
+			);
+			path = Widget;
 			sourceTree = "<group>";
 		};
 		C0CBDF752F8E08195B67E0D1 /* Agenda */ = {
@@ -593,6 +625,7 @@
 				5F06EE1ECF8D021AF35D9610 /* Agenda */,
 				B01193572275F2092F2C7D52 /* Domain */,
 				33FF5C719F7F4055F61C1B69 /* Store */,
+				BEDFAC8F603220694CAA91D6 /* Widget */,
 			);
 			path = CalenminderKit;
 			sourceTree = "<group>";
@@ -615,9 +648,19 @@
 		F24EE9437DBD18F3D1152A6C /* CalenminderIntents */ = {
 			isa = PBXGroup;
 			children = (
-				7C07D80F0830D1BD185A3D5A /* CompleteSpikeReminderIntent.swift */,
+				F5499DB9CCE2663827829221 /* CalenminderIntentsPlaceholder.swift */,
 			);
 			path = CalenminderIntents;
+			sourceTree = "<group>";
+		};
+		F3D5323A1AD47A9E68F64145 /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				77939D0676B9FE63D74060DD /* WidgetContentLoaderTests.swift */,
+				A06642C4E5A3AF88E0CCA9AB /* WidgetTimelineAssemblyTests.swift */,
+				68C0D85FA7FB82C9A37E3067 /* WidgetViewSmokeTests.swift */,
+			);
+			path = Widget;
 			sourceTree = "<group>";
 		};
 		F4A7C2F313695C3AD93858EF /* Calenminder */ = {
@@ -819,6 +862,10 @@
 				D4284CFBF35E6053B1438F7D /* SpikeConfig.swift in Sources */,
 				78F9A503E353FB7F3AE93346 /* Stores.swift in Sources */,
 				764E38877C69A67D08D35603 /* SystemCalendarProvider.swift in Sources */,
+				3C6B73825B825861DBF9B905 /* WidgetAgendaEntry.swift in Sources */,
+				513BC4E789AF8467F4E33C43 /* WidgetAgendaViews.swift in Sources */,
+				9EB51E0BF9F6E83FAF03DBEA /* WidgetContentLoader.swift in Sources */,
+				7EE6EB8751BC75CD453BABF6 /* WidgetTimelineAssembly.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -826,9 +873,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9E76FA7D0C00BF6AF70076E /* AddTaskControl.swift in Sources */,
+				ED862BDCF020DFCBB426549B /* AgendaWidget.swift in Sources */,
+				4493E5234F2AA81047772DB9 /* AgendaWidgetEntryView.swift in Sources */,
 				7095DAFBD29DD5095FDE0410 /* CalenminderWidgetBundle.swift in Sources */,
-				2DE38DD00AB1B94ED8DF4BD2 /* SpikeWidget.swift in Sources */,
-				212CD092FDD835D37A5E18EF /* WidgetSpikeCompleteIntent.swift in Sources */,
+				4CD7DA2745A7C72E594C9B40 /* CompleteTaskIntent.swift in Sources */,
+				690F520AA08AC777CCE43F27 /* WidgetEnvironment.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -844,7 +894,6 @@
 				3A9EEF69308B829BC2C2A3B6 /* AppGroupTests.swift in Sources */,
 				E1A099A4569C803FD033DB77 /* CalendarVisibilityStoreTests.swift in Sources */,
 				530556D1870F8C9BF6C11745 /* CalendarVisibilityViewModelTests.swift in Sources */,
-				3D4F7EA21C5EC75582989FDC /* CompleteSpikeReminderIntentTests.swift in Sources */,
 				7D48B59AB0924E838DF82CDA /* DayStampTests.swift in Sources */,
 				F73D93FC7164F01DC338FF62 /* DayWindowMembershipTests.swift in Sources */,
 				EED1B2E508D6E50F731BF96C /* DeepLinkRouterTests.swift in Sources */,
@@ -868,6 +917,9 @@
 				64275B06F0AEFED39A6C55C3 /* TaskComposerViewModelTests.swift in Sources */,
 				3714565E130F95DE827E76D8 /* TaskDetailViewModelTests.swift in Sources */,
 				2C14117A62E0DB179FF3471D /* ViewSmokeTests.swift in Sources */,
+				DE034B3CC63EB3A4E2B3A5CF /* WidgetContentLoaderTests.swift in Sources */,
+				CDFED73AFBB2A5271B5F47A9 /* WidgetTimelineAssemblyTests.swift in Sources */,
+				3677F5FFB27DDD66EE5EE594 /* WidgetViewSmokeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -902,7 +954,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				244CB47FB9D9F8D94E391A8D /* CompleteSpikeReminderIntent.swift in Sources */,
+				A7CDD2B63DEFAF1D17B71B93 /* CalenminderIntentsPlaceholder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

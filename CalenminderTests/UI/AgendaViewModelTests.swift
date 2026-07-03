@@ -284,4 +284,19 @@ struct AgendaViewModelTests {
         let foundTask = try await viewModel.resolveTask(externalIdentifier: "t1")
         #expect(foundTask?.externalIdentifier == "t1")
     }
+
+    // MARK: - Phase 5 reload trigger: app foreground
+
+    @Test("Phase 5: handleForeground() nudges a widget reload, not just an agenda reload")
+    func handleForegroundReloadsWidgets() async {
+        let reloader = FakeWidgetReloader()
+        let service = AgendaService(eventStore: FakeEventStore(), taskStore: FakeTaskStore(), widgetReloader: reloader)
+        let viewModel = AgendaViewModel(agendaService: service, calendar: .current)
+        await viewModel.load()
+        #expect(reloader.reloadCount == 0, "a plain load must not itself trigger a widget reload")
+
+        await viewModel.handleForeground()
+
+        #expect(reloader.reloadCount == 1)
+    }
 }
