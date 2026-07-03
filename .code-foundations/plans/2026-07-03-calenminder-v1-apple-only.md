@@ -2,7 +2,7 @@
 **Created:** 2026-07-03
 **Status:** in-progress
 **Started:** 2026-07-03 (feature branch: feature/calenminder-v1)
-**Current Phase:** 1
+**Current Phase:** 2
 **Complexity:** medium
 ---
 ## Context
@@ -251,7 +251,14 @@ Manual (device):
 ---
 ## Execution Log
 
-### Phase 1: Scaffold + risk spike (2026-07-03)
+### Phase 1: Scaffold + risk spike (Gate: Standard)
+- [x] BUILD: Discovery + design + implementation (stub -> implement -> validate) complete
+- [x] REVIEW: Verification passed
+- [x] Committed
+Commit: e8ad2c6
+Summary: 5-target Xcode workspace (app, CalenminderKit shared framework, CalenminderIntents, widget extension, Swift Testing tests) builds and tests green via XcodeGen/Makefile; spike verdict widgetCanWriteReminders: true (widget Button(intent:) completes an EKReminder), with the constraint that widget-invoked intents must be declared inside the widget target, not a shared framework.
+
+### Phase 1 details (2026-07-03)
 
 **Spike verdict: `widgetCanWriteReminders: true`.**
 
