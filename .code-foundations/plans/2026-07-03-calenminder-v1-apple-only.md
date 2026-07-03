@@ -1,8 +1,9 @@
 # Plan: Calenminder v1 (Apple-only) - calendar events + day-scoped tasks for iOS
 **Created:** 2026-07-03
-**Status:** in-progress
+**Status:** complete
 **Started:** 2026-07-03 (feature branch: feature/calenminder-v1)
-**Current Phase:** 5
+**Completed:** 2026-07-03
+**Duration:** single day (5 phases)
 **Complexity:** medium
 ---
 ## Context
@@ -278,6 +279,13 @@ Summary: EventKitEventStore + ReminderTaskStore implement the Domain protocols v
 - [x] Committed
 Commit: a951615
 Summary: AgendaService.agenda(for:filter:) in CalenminderKit/Agenda/ is the single read path (assembly, filters, change-stream merge, widget reloads); full app UI shipped (agenda, event detail/edit with spans, tasks, calendar toggles, onboarding, defensively parsed calenminder:// deep links); AgendaViewModel owns optimistic rollback and follows today across midnight; 158 unit + 9 integration tests green.
+
+### Phase 5: Widget + App Intents (Gate: Standard)
+- [x] BUILD: Discovery + design + implementation (stub -> implement -> validate) complete
+- [x] REVIEW: Verification passed
+- [x] Committed
+Commit: 65389fa
+Summary: AgendaWidget ships accessoryRectangular/systemSmall/systemMedium fed by WidgetContentLoader with AgendaFilter.widget; tap-to-complete via CompleteTaskIntent declared in the widget target; two-entry midnight-spanning timelines; stale-id graceful no-op; iOS 18 AddTaskControl availability-gated; Phase 1 spike retired; 180 unit + 9 integration tests green. Live widget tap on a real Home/Lock Screen remains a manual device check (T-5.2).
 
 ### Phase 1 details (2026-07-03)
 
