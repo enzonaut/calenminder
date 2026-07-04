@@ -78,30 +78,29 @@ final class SwipeNavigationUITests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.otherElements["root-agenda"].waitForExistence(timeout: 10))
 
-        seedTask(app, title: "Swipe Regression Task")
+        // A run-unique title, not a fixed literal: this simulator's real
+        // Reminders store keeps whatever other incomplete tasks pre-existed
+        // (this suite's own past runs, manual verification, or - on a real
+        // device - the user's own data), so the row this test taps must be
+        // identified by something only *this* run created, never "whichever
+        // circle happens to be first in the list" (see the class-level
+        // pollution note on `circleButton(forRowTitled:in:)`).
+        let title = uniqueTitle("Swipe Regression Task")
+        seedTask(app, title: title)
 
         let titleBefore = currentTitle(app)
-        // The checkmark `Button`'s own `task-row-toggle-<id>` accessibility
-        // identifier gets superseded at runtime by its enclosing `Section`'s
-        // identifier (a real SwiftUI `List`-section quirk, same class of
-        // issue as `MonthDayCell`'s doc comment about a day cell's
-        // identifier surfacing on whichever child is exposed) - so this
-        // locates the incomplete task's circle by its rendered label instead,
-        // which is stable and unambiguous.
-        let incompleteCircles = app.buttons.matching(NSPredicate(format: "label == 'circle'"))
         let list = app.descendants(matching: .any).matching(identifier: "agenda-list").firstMatch
         // The Tasks section can be scrolled below the initial viewport (a
         // long list of events, or many previously-seeded tasks, ahead of
         // it) - List virtualizes off-screen rows out of the accessibility
-        // tree entirely, so scroll down a few times if the freshly-seeded
-        // task's circle is not immediately visible.
-        for _ in 0..<5 where !incompleteCircles.firstMatch.exists {
-            list.swipeUp()
-        }
-        XCTAssertTrue(incompleteCircles.firstMatch.waitForExistence(timeout: 5), "seeded task's checkmark button should exist")
+        // tree entirely, so scroll down until *this* row (found by its own
+        // unique title, not any incomplete row) is visible.
+        let circle = circleButton(forRowTitled: title, in: app)
+        for _ in 0..<10 where !circle.exists { list.swipeUp() }
+        XCTAssertTrue(circle.waitForExistence(timeout: 5), "seeded task's own checkmark button should exist")
 
-        let circlesBeforeTap = incompleteCircles.count
-        incompleteCircles.firstMatch.tap()
+        waitForSteadyFrame(of: circle)
+        tapWhenReady(circle)
         // Give any (correctly-scoped, horizontal-dominant) gesture recognizer
         // time to have misfired if it were going to.
         sleep(1)
@@ -109,13 +108,14 @@ final class SwipeNavigationUITests: XCTestCase {
         XCTAssertEqual(currentTitle(app), titleBefore, "tapping the checkmark must not page the displayed day")
         XCTAssertTrue(app.otherElements["root-agenda"].exists, "the agenda must still be showing (no crash) after the tap")
         // The tap must land as a button tap (not be consumed by any gesture):
-        // the tapped task completes and its circle leaves the incomplete
-        // working set. This assertion previously checked the circle was
-        // *still hittable* - which only ever passed because the completion
-        // race (since fixed) could leave the tapped task incomplete; the
-        // intended behavior is the opposite.
-        let completedOne = expectation(for: NSPredicate(format: "count == \(circlesBeforeTap - 1)"), evaluatedWith: incompleteCircles)
-        XCTAssertEqual(XCTWaiter().wait(for: [completedOne], timeout: 5), .completed, "the tapped checkmark's task should complete (circle count \(circlesBeforeTap) -> \(circlesBeforeTap - 1)), proving the tap was not consumed by a swipe")
+        // the tapped task completes and *its own* row's circle (found again
+        // by the same unique title, never any other row) stops existing.
+        // This assertion previously checked the circle was *still hittable*
+        // - which only ever passed because the completion race (since fixed)
+        // could leave the tapped task incomplete; the intended behavior is
+        // the opposite.
+        let completed = expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: circle)
+        XCTAssertEqual(XCTWaiter().wait(for: [completed], timeout: 6), .completed, "the tapped checkmark's task should complete, proving the tap was not consumed by a swipe")
     }
 
     // MARK: - Checkmark completion-race regression (pre-existing bug, fixed)
@@ -149,34 +149,62 @@ final class SwipeNavigationUITests: XCTestCase {
         let list = app.descendants(matching: .any).matching(identifier: "agenda-list").firstMatch
         XCTAssertTrue(list.waitForExistence(timeout: 5))
 
-        let incompleteCircles = app.buttons.matching(NSPredicate(format: "label == 'circle'"))
-
-        // Drain any incomplete tasks left over from earlier suite runs so
-        // every iteration below starts from a known "exactly one incomplete
-        // task" state.
-        var drainGuard = 0
-        while incompleteCircles.firstMatch.exists, drainGuard < 20 {
-            incompleteCircles.firstMatch.tap()
-            sleep(2)
-            drainGuard += 1
-        }
-
+        // No pre-drain of "whatever is incomplete": this simulator's real
+        // Reminders store carries however much pre-existing data other runs,
+        // manual verification, or (on a real device) the user's own tasks
+        // left behind - blindly tapping every incomplete circle in the list
+        // would complete tasks this test never created, which is both unsafe
+        // and (with enough accumulated rows) too slow to bound with a fixed
+        // retry count. Each iteration instead seeds one run-unique task and
+        // only ever locates/taps *that* row's own circle, so correctness
+        // never depends on how much other data is present.
         var failures: [Int] = []
+        var lastTitle = ""
         for iteration in 1...10 {
-            seedTask(app, title: "Race Repro \(iteration)-\(UUID().uuidString.prefix(6))")
-            for _ in 0..<5 where !incompleteCircles.firstMatch.exists { list.swipeUp() }
-            XCTAssertTrue(incompleteCircles.firstMatch.waitForExistence(timeout: 5), "iteration \(iteration): seeded task's circle should appear")
+            let title = uniqueTitle("Race Repro \(iteration)")
+            lastTitle = title
+            seedTask(app, title: title)
+            let circle = circleButton(forRowTitled: title, in: app)
+            for _ in 0..<10 where !circle.exists { list.swipeUp() }
+            XCTAssertTrue(circle.waitForExistence(timeout: 5), "iteration \(iteration): seeded task's own circle should appear")
 
-            incompleteCircles.firstMatch.tap()
+            // The seed's own write fires `EKEventStoreChanged`-driven reloads
+            // that re-diff the `List` right around now - a tap synthesized
+            // while the row is being replaced under it gets swallowed by the
+            // recycled row (button action never fires), which reads exactly
+            // like the revert this test guards against but is pure tap-timing.
+            // Confirmed empirically on a data-heavy store (wider diff window):
+            // iteration 1, right after launch, intermittently failed with the
+            // circle never disappearing, and a plain re-tap completed it -
+            // i.e. the first tap had landed on a mid-diff row. Waiting for the
+            // row's frame to hold still first removes that window without
+            // weakening the actual assertion (a genuine revert still fails).
+            waitForSteadyFrame(of: circle)
+            tapWhenReady(circle)
 
-            let settled = expectation(for: NSPredicate(format: "count == 0"), evaluatedWith: incompleteCircles)
-            let result = XCTWaiter().wait(for: [settled], timeout: 3)
+            // 6s, not the original flat query's 3s: scoping every poll to
+            // this row's own `Cell` (via `.cells.containing(...)`, see
+            // `circleButton(forRowTitled:in:)`) costs several extra
+            // accessibility-snapshot round trips per check compared to a
+            // flat `app.buttons.matching(...)` query - measured empirically
+            // to occasionally push a real, on-time completion just past a
+            // 3s budget purely on query overhead, reporting a false failure
+            // for an iteration that actually settled correctly. The
+            // assertion itself (no reversion) is unchanged; this only gives
+            // the pricier-but-correctly-scoped check enough real time to
+            // observe the same outcome the original, cheaper query would
+            // have seen sooner.
+            let settled = expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: circle)
+            let result = XCTWaiter().wait(for: [settled], timeout: 6)
             if result != .completed {
                 failures.append(iteration)
+                // Evidence for triage: what the screen actually showed when
+                // the circle failed to disappear.
+                attachScreenshot(app, name: "race-iteration-\(iteration)-failed")
                 // Recover so the next iteration starts clean regardless of
                 // this iteration's outcome.
-                if incompleteCircles.firstMatch.exists {
-                    incompleteCircles.firstMatch.tap()
+                if circle.exists {
+                    tapWhenReady(circle)
                     sleep(2)
                 }
             }
@@ -185,40 +213,79 @@ final class SwipeNavigationUITests: XCTestCase {
         print("CHECKMARK_RACE_BASELINE: \(failures.count)/10 iterations failed to settle to completed. Failing iterations: \(failures)")
         XCTAssertTrue(failures.isEmpty, "expected all 10 real checkmark taps to complete without reverting; failed iterations: \(failures)")
 
-        // Uncomplete leg: expand the Completed section and tap one completed
-        // task's checkmark - the exact same `toggleTaskCompletion` ->
-        // `load()` path, opposite direction. The task must come back to the
+        // Uncomplete leg: expand the Completed section and tap the *last*
+        // iteration's own completed task's checkmark, found again by its
+        // unique title - the exact same `toggleTaskCompletion` -> `load()`
+        // path, opposite direction. The task must come back to the
         // incomplete working set and *stay* there (no race-driven revert).
         // The DisclosureGroup's header is exposed as a button labeled
         // "Completed"; its rows only enter the accessibility tree once
         // expanded.
         let completedHeader = app.buttons["Completed"]
-        for _ in 0..<5 where !completedHeader.exists { list.swipeUp() }
+        for _ in 0..<10 where !completedHeader.exists { list.swipeUp() }
         XCTAssertTrue(completedHeader.waitForExistence(timeout: 5), "the Completed section should exist after completing tasks")
-        completedHeader.tap()
+        tapWhenReady(completedHeader)
 
         // The toggle's own `task-row-toggle-<id>` identifier is superseded
         // at runtime by its enclosing Section's identifier (the same List-
-        // section quirk documented on the incomplete-circle locator above),
-        // so completed toggles surface as buttons carrying the
-        // "agenda-completed-section" identifier.
-        let completedToggles = app.buttons.matching(NSPredicate(format: "identifier == 'agenda-completed-section' AND label != 'Completed'"))
-        if !completedToggles.firstMatch.waitForExistence(timeout: 5) {
+        // section quirk documented on `circleButton(forRowTitled:in:)`), so
+        // scope by the row containing this run's own title, same as every
+        // other lookup in this test - never any completed row at large,
+        // which (with enough accumulated history in this store) could be
+        // someone else's task entirely.
+        // The Completed section lists completed-today tasks oldest-first
+        // (confirmed empirically via a tree dump: an earlier run's
+        // "Race Repro 1/2/..." rows render at the top, the just-completed
+        // probe at the very bottom, virtualized out of the tree) - so this
+        // run's own row sits at the END of *every* completed-today row the
+        // store has accumulated, which on a shared/lived-in store can be many
+        // screenfuls deep. Fast-swipe with a generous budget until the row
+        // enters the rendered buffer; a fixed ~10-swipe budget was measured
+        // to run out once enough prior runs' completions had piled up.
+        let completedToggle = completedToggleButton(forRowTitled: lastTitle, in: app)
+        var scrollBudget = 40
+        while !completedToggle.exists, scrollBudget > 0 {
+            list.swipeUp(velocity: .fast)
+            scrollBudget -= 1
+        }
+        if !completedToggle.waitForExistence(timeout: 5) {
             let dump = app.buttons.allElementsBoundByIndex.map { "[\($0.identifier)|\($0.label)]" }.joined(separator: " ")
-            XCTFail("expanding Completed should reveal completed checkmark toggles; visible buttons: \(dump)")
+            XCTFail("expanding Completed should reveal this run's own completed toggle for '\(lastTitle)'; visible buttons: \(dump)")
             return
         }
-        completedToggles.firstMatch.tap()
+        // The DisclosureGroup expansion animates its rows in - same
+        // swallowed-tap exposure as the iteration loop's post-seed tap.
+        waitForSteadyFrame(of: completedToggle)
+        tapWhenReady(completedToggle)
 
-        let reappeared = expectation(for: NSPredicate(format: "count == 1"), evaluatedWith: incompleteCircles)
-        XCTAssertEqual(XCTWaiter().wait(for: [reappeared], timeout: 3), .completed, "uncompleting must return the task to the incomplete working set")
+        // The uncompleted row returns to the Tasks section, which sits
+        // *above* the Completed section this leg just scrolled down to - and
+        // `List` virtualizes off-screen rows out of the accessibility tree
+        // entirely (the same virtualization documented on the seeded-task
+        // scroll loops above), so `exists` on the row's circle stays false
+        // from down here even when the uncompletion succeeded. Scroll back
+        // up until the row is actually on screen before asserting on it -
+        // confirmed empirically: with enough completed rows accumulated from
+        // earlier runs pushing the Tasks section further off-screen, the
+        // assert-without-scrolling version of this leg failed exactly here.
+        // Same generous fast-swipe budget as the downward hunt above: the
+        // way back up crosses that entire accumulated Completed section.
+        let circle = circleButton(forRowTitled: lastTitle, in: app)
+        var upBudget = 40
+        while !circle.exists, upBudget > 0 {
+            list.swipeDown(velocity: .fast)
+            upBudget -= 1
+        }
+        let reappeared = expectation(for: NSPredicate(format: "exists == true"), evaluatedWith: circle)
+        XCTAssertEqual(XCTWaiter().wait(for: [reappeared], timeout: 6), .completed, "uncompleting must return the task to the incomplete working set")
         // ... and it must still be there after the change-notification
         // reload settles (the revert in the original bug landed ~1s later).
         sleep(2)
-        XCTAssertEqual(incompleteCircles.count, 1, "the uncompleted task must not be raced back to completed")
+        XCTAssertTrue(circle.exists, "the uncompleted task must not be raced back to completed")
 
         // Leave the store clean for other tests: re-complete it.
-        incompleteCircles.firstMatch.tap()
+        waitForSteadyFrame(of: circle)
+        tapWhenReady(circle)
     }
 
     // MARK: - DW-F5.2: Week strip swipe
@@ -275,7 +342,16 @@ final class SwipeNavigationUITests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.otherElements["root-agenda"].waitForExistence(timeout: 10))
 
-        seedEvent(app, title: "Swipe Regression Event")
+        // Run-unique title: previous runs of this exact test (this suite has
+        // no delete affordance to clean up after itself before this fix) had
+        // left over a dozen-plus same-titled "Swipe Regression Event" rows in
+        // the simulator's real Default calendar - harmless to this test's own
+        // assertions (which never count events), but the title still needs
+        // to be unique so `deleteSeededEvent` below can find and remove
+        // *this* run's own event without touching anyone else's.
+        let eventTitle = uniqueTitle("Swipe Regression Event")
+        seedEvent(app, title: eventTitle)
+        defer { deleteSeededEvent(app, title: eventTitle) }
 
         app.segmentedControls["calendar-mode-switcher"].buttons["Month"].tap()
         XCTAssertTrue(app.otherElements["root-month"].waitForExistence(timeout: 5))
@@ -325,11 +401,17 @@ final class SwipeNavigationUITests: XCTestCase {
         XCTWaiter().wait(for: [notLoading], timeout: 5)
         attachScreenshot(app, name: "month-view-after-swipe")
 
-        // Chevrons still work, and still target the same view model swipe does.
-        app.buttons["month-previous"].tap()
+        // Chevrons still work, and still target the same view model swipe
+        // does. `tapWhenReady` (not a bare `.tap()`) waits for `isHittable`,
+        // not just `.exists` - a plain tap immediately after the swipe's
+        // page-turn/relayout settled was observed empirically to sometimes
+        // land on a toolbar button before its activation point was valid
+        // ("Computed hit point {-1, -1} after scrolling to visible"), a
+        // transient layout race independent of any seeded data.
+        tapWhenReady(app.buttons["month-previous"])
         XCTAssertTrue(app.navigationBars[currentTitleText].waitForExistence(timeout: 5), "the previous-month chevron must still work after a swipe")
 
-        app.buttons["month-next"].tap()
+        tapWhenReady(app.buttons["month-next"])
         XCTAssertTrue(app.navigationBars[nextTitleText].waitForExistence(timeout: 5), "the next-month chevron must still work after a swipe")
     }
 
@@ -384,29 +466,135 @@ final class SwipeNavigationUITests: XCTestCase {
     }
 
     private func seedTask(_ app: XCUIApplication, title: String) {
-        app.buttons["agenda-add-menu"].tap()
+        tapWhenReady(app.buttons["agenda-add-menu"])
         let newTask = app.buttons["New Task"]
         XCTAssertTrue(newTask.waitForExistence(timeout: 5), "the add menu's New Task item should appear")
-        newTask.tap()
+        tapWhenReady(newTask)
         let titleField = app.textFields["task-composer-title"]
         XCTAssertTrue(titleField.waitForExistence(timeout: 5))
-        titleField.tap()
+        tapWhenReady(titleField)
         titleField.typeText(title)
-        app.buttons["task-composer-save"].tap()
+        tapWhenReady(app.buttons["task-composer-save"])
         XCTAssertTrue(app.otherElements["root-agenda"].waitForExistence(timeout: 5))
     }
 
     private func seedEvent(_ app: XCUIApplication, title: String) {
-        app.buttons["agenda-add-menu"].tap()
+        tapWhenReady(app.buttons["agenda-add-menu"])
         let newEvent = app.buttons["New Event"]
         XCTAssertTrue(newEvent.waitForExistence(timeout: 5), "the add menu's New Event item should appear")
-        newEvent.tap()
+        tapWhenReady(newEvent)
         let titleField = app.textFields["event-edit-title"]
         XCTAssertTrue(titleField.waitForExistence(timeout: 5))
-        titleField.tap()
+        tapWhenReady(titleField)
         titleField.typeText(title)
-        app.buttons["event-edit-save"].tap()
+        tapWhenReady(app.buttons["event-edit-save"])
         XCTAssertTrue(app.otherElements["root-agenda"].waitForExistence(timeout: 5))
+    }
+
+    /// A per-invocation-unique title built from `base`. Every item this suite
+    /// seeds into the simulator's real Calendar/Reminders stores uses one of
+    /// these, never a fixed literal - see the discovery doc
+    /// (`.code-foundations/build/2026-07-04-calenminder-uitest-flake-discovery.md`)
+    /// for why a fixed literal title let this suite's own repeated runs
+    /// accumulate indistinguishable duplicates over time, which in turn made
+    /// "find the row this test just created" ambiguous with "find some row
+    /// left over from an earlier run" - a distinction none of this suite's
+    /// assertions can afford to lose.
+    private func uniqueTitle(_ base: String) -> String {
+        "\(base) \(UUID().uuidString.prefix(8))"
+    }
+
+    /// Waits for `element` to exist *and* be hittable before tapping -
+    /// XCUIElement.tap() alone only waits for existence, not for the
+    /// element's activation point to actually be valid. A bare `.tap()`
+    /// immediately after a sheet presentation/dismissal or a page-turn
+    /// relayout was observed empirically to intermittently fail with
+    /// "Activation point invalid" / "Computed hit point {-1, -1}" even
+    /// though `.exists` was already `true` - a transient timing race
+    /// unrelated to how much data is seeded, which this suite's own launch,
+    /// menu, and chevron taps are equally exposed to.
+    private func tapWhenReady(_ element: XCUIElement, timeout: TimeInterval = 5) {
+        XCTAssertTrue(element.waitForExistence(timeout: timeout), "\(element) should exist before tapping")
+        if !element.isHittable {
+            let hittable = expectation(for: NSPredicate(format: "isHittable == true"), evaluatedWith: element)
+            _ = XCTWaiter().wait(for: [hittable], timeout: timeout)
+        }
+        element.tap()
+    }
+
+    /// Waits until `element`'s frame reports the same value on two
+    /// consecutive samples and the element is hittable - i.e. the `List` has
+    /// finished any in-flight diff/relayout around it. A tap synthesized
+    /// while a row is being replaced (a store-change reload re-diffing the
+    /// list) can be delivered to the recycled row and silently fire nothing;
+    /// see the call site in the checkmark-race test for the empirical trace.
+    /// Best-effort: on timeout it simply returns (the subsequent tap then
+    /// behaves exactly as it would have without this wait).
+    private func waitForSteadyFrame(of element: XCUIElement, timeout: TimeInterval = 5) {
+        let deadline = Date().addingTimeInterval(timeout)
+        // `.frame` on an element with no current match hard-fails the test
+        // ("Failed to get matching snapshot: No matches found..."), and a
+        // mid-diff row can transiently vanish from the tree - so re-check
+        // `exists` before every frame read.
+        var previous = element.exists ? element.frame : .null
+        while Date() < deadline {
+            usleep(300_000)
+            let current = element.exists ? element.frame : .null
+            if current == previous, !current.isEmpty, !current.isNull, element.isHittable { return }
+            previous = current
+        }
+    }
+
+    /// Locates the incomplete-task checkmark `Button` for the row whose
+    /// title is exactly `title` - scoped to that one `List` row (a `Cell`
+    /// ancestor, confirmed empirically via the accessibility tree), never
+    /// "whichever circle-labeled button happens to be first in the list".
+    ///
+    /// This distinction matters because every incomplete task's checkmark
+    /// image renders with the *identical* accessibility label ("circle" -
+    /// see the label-based workaround note above), so on a store carrying
+    /// any pre-existing incomplete tasks (this suite's own past runs before
+    /// this fix routinely left over a hundred-plus; a real device has the
+    /// user's own pending reminders), matching on label alone across the
+    /// whole app can tap - or count - a row this test never created. Scoping
+    /// to the row containing this run's own unique title keeps every
+    /// assertion correct regardless of how much other data exists.
+    private func circleButton(forRowTitled title: String, in app: XCUIApplication) -> XCUIElement {
+        let row = app.cells.containing(NSPredicate(format: "label == %@", title)).firstMatch
+        return row.buttons.matching(NSPredicate(format: "label == 'circle'")).firstMatch
+    }
+
+    /// Same scoping as `circleButton(forRowTitled:in:)`, for a row inside the
+    /// expanded "Completed" `DisclosureGroup` - its toggle buttons carry the
+    /// bled `"agenda-completed-section"` identifier (see the checkmark
+    /// test's own comment), so label/identifier alone cannot distinguish one
+    /// completed row from another; only the row's own title can.
+    private func completedToggleButton(forRowTitled title: String, in app: XCUIApplication) -> XCUIElement {
+        let row = app.cells.containing(NSPredicate(format: "label == %@", title)).firstMatch
+        return row.buttons.matching(NSPredicate(format: "identifier == 'agenda-completed-section'")).firstMatch
+    }
+
+    /// Best-effort cleanup for an event this suite created via `seedEvent`:
+    /// switches back to Day view, opens the event's own detail sheet (found
+    /// by its unique title, never any other event), and deletes it through
+    /// the app's existing `event-detail-delete` affordance. Tasks have no
+    /// equivalent delete path in this app (`TaskStoring` intentionally has no
+    /// delete member - only completion), so this only applies to events;
+    /// swallows its own failures (best-effort teardown must never mask the
+    /// test's actual assertions with an unrelated teardown failure).
+    private func deleteSeededEvent(_ app: XCUIApplication, title: String) {
+        let mode = app.segmentedControls["calendar-mode-switcher"]
+        if mode.buttons["Day"].exists { mode.buttons["Day"].tap() }
+        let list = app.descendants(matching: .any).matching(identifier: "agenda-list").firstMatch
+        let row = app.cells.containing(NSPredicate(format: "label == %@", title)).firstMatch
+        for _ in 0..<10 where !row.exists { list.swipeUp() }
+        guard row.waitForExistence(timeout: 5) else { return }
+        row.tap()
+        let deleteButton = app.buttons["event-detail-delete"]
+        guard deleteButton.waitForExistence(timeout: 5) else { return }
+        deleteButton.tap()
+        let confirm = app.buttons["This Event"]
+        if confirm.waitForExistence(timeout: 3) { confirm.tap() }
     }
 
     /// Writes a real PNG to `.code-foundations/build/swipe-evidence/` (not

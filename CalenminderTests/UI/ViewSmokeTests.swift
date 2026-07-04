@@ -222,4 +222,19 @@ struct ViewSmokeTests {
         let size = ViewRenderProbe.renderedSize(CalendarVisibilityView(viewModel: viewModel))
         #expect(size != nil && size!.width > 0 && size!.height > 0)
     }
+
+    @Test("DW-AS.1: CalendarVisibilityView renders its folded-in About section without crashing")
+    func test_DW_AS_1_calendarVisibilityViewRendersAboutSection() async {
+        let directory = FakeCalendarDirectory()
+        directory.result = .success([EventCalendarInfo(identifier: "a", title: "Home", colorRed: 1, colorGreen: 0, colorBlue: 0, isVisible: true)])
+        let service = AgendaService(eventStore: FakeEventStore(), taskStore: FakeTaskStore(), calendarDirectory: directory, calendarVisibility: FakeCalendarVisibilityStore())
+        let agenda = AgendaViewModel(agendaService: service, calendar: .current)
+        let viewModel = CalendarVisibilityViewModel(agenda: agenda)
+        await viewModel.load()
+        let about = AppAboutInfo(shortVersion: "1.0", buildNumber: "1")
+
+        let size = ViewRenderProbe.renderedSize(CalendarVisibilityView(viewModel: viewModel, about: about))
+
+        #expect(size != nil && size!.width > 0 && size!.height > 0, "CalendarVisibilityView failed to render with an About section")
+    }
 }
