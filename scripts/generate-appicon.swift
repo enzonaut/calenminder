@@ -1,9 +1,8 @@
 // Generates Calenminder/Assets.xcassets/AppIcon.appiconset/icon-1024.png.
 // Run: swift scripts/generate-appicon.swift
-// Design: Apple Calendar-style date tile - white card, red weekday word,
-// large thin date numeral - plus a small task row (red check + dashes) at
-// the bottom to mark it as Calenminder. The date is static (MONDAY 17);
-// iOS does not allow third-party apps to render a live date on the icon.
+// Design: a calendar card (red header with binder rings, white body with a
+// month grid) with a large red checkmark in front of it - a calendar with
+// a check on it.
 import AppKit
 import Foundation
 
@@ -16,67 +15,98 @@ let rep = NSBitmapImageRep(
 NSGraphicsContext.saveGraphicsState()
 NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
 
-let red = NSColor(srgbRed: 1.0, green: 0.23, blue: 0.19, alpha: 1)      // Apple system red
-let ink = NSColor(srgbRed: 0.11, green: 0.11, blue: 0.12, alpha: 1)
-let dashGray = NSColor(srgbRed: 0.82, green: 0.81, blue: 0.79, alpha: 1)
+let redTop = NSColor(srgbRed: 1.00, green: 0.42, blue: 0.35, alpha: 1)
+let redBottom = NSColor(srgbRed: 0.87, green: 0.18, blue: 0.14, alpha: 1)
+let checkRed = NSColor(srgbRed: 0.91, green: 0.23, blue: 0.17, alpha: 1)
+let cellGray = NSColor(srgbRed: 0.90, green: 0.89, blue: 0.87, alpha: 1)
+let ringGray = NSColor(srgbRed: 0.62, green: 0.63, blue: 0.66, alpha: 1)
 
-// Background: white with a whisper of vertical gradient.
-let bg = NSGradient(
-    starting: NSColor(srgbRed: 1, green: 1, blue: 1, alpha: 1),
-    ending: NSColor(srgbRed: 0.965, green: 0.96, blue: 0.95, alpha: 1)
-)!
-bg.draw(in: NSRect(x: 0, y: 0, width: size, height: size), angle: -90)
+// Backdrop: soft neutral gradient.
+NSGradient(
+    starting: NSColor(srgbRed: 0.94, green: 0.94, blue: 0.95, alpha: 1),
+    ending: NSColor(srgbRed: 0.86, green: 0.86, blue: 0.88, alpha: 1)
+)!.draw(in: NSRect(x: 0, y: 0, width: size, height: size), angle: -90)
 
-// AppKit origin is bottom-left; helper converts a top-origin center y.
-func centerRect(for text: NSAttributedString, centerYTop: CGFloat) -> NSPoint {
-    let bounds = text.size()
-    return NSPoint(
-        x: (CGFloat(size) - bounds.width) / 2,
-        y: CGFloat(size) - centerYTop - bounds.height / 2
+// AppKit origin is bottom-left; layout constants below use top-origin
+// mental math converted inline (y = 1024 - topY - height).
+
+// Calendar card with a soft shadow. Top-origin: x 132, y 172, w 760, h 724.
+let cardRect = NSRect(x: 132, y: 1024 - 172 - 724, width: 760, height: 724)
+let cardPath = NSBezierPath(roundedRect: cardRect, xRadius: 64, yRadius: 64)
+NSGraphicsContext.current?.saveGraphicsState()
+let shadow = NSShadow()
+shadow.shadowColor = NSColor(calibratedWhite: 0, alpha: 0.22)
+shadow.shadowOffset = NSSize(width: 0, height: -18)
+shadow.shadowBlurRadius = 42
+shadow.set()
+NSColor.white.setFill()
+cardPath.fill()
+NSGraphicsContext.current?.restoreGraphicsState()
+
+// Red header: top 196pt of the card, rounded only at the card's top corners
+// (clip to the card path, fill a rect).
+NSGraphicsContext.current?.saveGraphicsState()
+cardPath.addClip()
+let headerRect = NSRect(x: cardRect.minX, y: cardRect.maxY - 196, width: cardRect.width, height: 196)
+NSGradient(starting: redTop, ending: redBottom)!.draw(in: headerRect, angle: -90)
+NSGraphicsContext.current?.restoreGraphicsState()
+
+// Binder rings: two capsules straddling the card's top edge.
+ringGray.setFill()
+for ringX in [cardRect.minX + 190, cardRect.maxX - 190 - 44] {
+    let ring = NSBezierPath(
+        roundedRect: NSRect(x: ringX, y: cardRect.maxY - 58, width: 44, height: 148),
+        xRadius: 22, yRadius: 22
     )
+    ring.fill()
 }
 
-// Weekday word, red, semibold, letterspaced - MONDAY, for the recycling task.
-let weekdayStyle: [NSAttributedString.Key: Any] = [
-    .font: NSFont.systemFont(ofSize: 108, weight: .semibold),
-    .foregroundColor: red,
-    .kern: 14,
-]
-let weekday = NSAttributedString(string: "MONDAY", attributes: weekdayStyle)
-weekday.draw(at: centerRect(for: weekday, centerYTop: 208))
+// Month grid on the card body: 4 columns x 3 rows.
+let cell: CGFloat = 108, gap: CGFloat = 34
+let gridW = 4 * cell + 3 * gap
+let gridX = cardRect.minX + (cardRect.width - gridW) / 2
+let bodyTop = cardRect.maxY - 196          // y of header bottom
+let gridTopInset: CGFloat = 62
+cellGray.setFill()
+for row in 0..<3 {
+    for col in 0..<4 {
+        let x = gridX + CGFloat(col) * (cell + gap)
+        let yTop = bodyTop - gridTopInset - CGFloat(row) * (cell + gap)
+        let dayCell = NSBezierPath(
+            roundedRect: NSRect(x: x, y: yTop - cell, width: cell, height: cell),
+            xRadius: 22, yRadius: 22
+        )
+        dayCell.fill()
+    }
+}
 
-// Large thin date numeral.
-let numeralStyle: [NSAttributedString.Key: Any] = [
-    .font: NSFont.systemFont(ofSize: 512, weight: .thin),
-    .foregroundColor: ink,
-]
-let numeral = NSAttributedString(string: "17", attributes: numeralStyle)
-numeral.draw(at: centerRect(for: numeral, centerYTop: 520))
+// The big checkmark in front, bottom-right heavy: white halo stroke first,
+// red stroke on top, both with its own drop shadow so it floats over the card.
+func checkPath() -> NSBezierPath {
+    let p = NSBezierPath()
+    p.lineCapStyle = .round
+    p.lineJoinStyle = .round
+    p.move(to: NSPoint(x: 356, y: 1024 - 610))
+    p.line(to: NSPoint(x: 540, y: 1024 - 796))
+    p.line(to: NSPoint(x: 872, y: 1024 - 388))
+    return p
+}
+NSGraphicsContext.current?.saveGraphicsState()
+let checkShadow = NSShadow()
+checkShadow.shadowColor = NSColor(calibratedWhite: 0, alpha: 0.28)
+checkShadow.shadowOffset = NSSize(width: 0, height: -14)
+checkShadow.shadowBlurRadius = 30
+checkShadow.set()
+let halo = checkPath()
+halo.lineWidth = 176
+NSColor.white.setStroke()
+halo.stroke()
+NSGraphicsContext.current?.restoreGraphicsState()
 
-// Task row at the bottom: red checkmark, then two rounded dashes.
-let rowCenterYTop: CGFloat = 862
-let rowY = CGFloat(size) - rowCenterYTop
-
-let check = NSBezierPath()
-check.lineWidth = 26
-check.lineCapStyle = .round
-check.lineJoinStyle = .round
-let checkOriginX: CGFloat = 242  // centers the 540pt check+dashes group
-check.move(to: NSPoint(x: checkOriginX, y: rowY + 2))
-check.line(to: NSPoint(x: checkOriginX + 40, y: rowY - 38))
-check.line(to: NSPoint(x: checkOriginX + 112, y: rowY + 46))
-red.setStroke()
+let check = checkPath()
+check.lineWidth = 108
+checkRed.setStroke()
 check.stroke()
-
-dashGray.setFill()
-for (index, width) in [CGFloat(200), CGFloat(132)].enumerated() {
-    let x = checkOriginX + 172 + CGFloat(index) * 236
-    let dash = NSBezierPath(
-        roundedRect: NSRect(x: x, y: rowY - 14, width: width, height: 30),
-        xRadius: 15, yRadius: 15
-    )
-    dash.fill()
-}
 
 NSGraphicsContext.current?.flushGraphics()
 NSGraphicsContext.restoreGraphicsState()
