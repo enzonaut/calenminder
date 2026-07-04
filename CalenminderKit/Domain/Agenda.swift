@@ -71,9 +71,21 @@ public func assembleAgenda(
         .filter { window.contains($0) }
         .sorted(by: eventOrdering)
 
-    // Incomplete working set: today's incomplete + overdue incomplete, deduped
-    // by durable identifier (today and overdue are disjoint by definition, but
-    // dedupe defensively), garbled items dropped.
+    let workingTasks = mergeIncompleteTasks(tasksDueToday: tasksDueToday, overdueTasks: overdueTasks)
+        .sorted(by: taskOrdering)
+
+    return AgendaSnapshot(events: visibleEvents, tasks: workingTasks)
+}
+
+/// The incomplete working set shared by `assembleAgenda` and Feature 3's
+/// badge count: today's incomplete tasks plus the overdue-incomplete
+/// lookback, deduped by durable identifier (today and overdue are disjoint
+/// by definition, but dedupe defensively), garbled items dropped. Pulled out
+/// as its own pure function so the agenda's task list and the badge count
+/// can never compute two different answers for the same store state -
+/// unordered (callers that need display order, i.e. `assembleAgenda`, sort
+/// the result themselves).
+func mergeIncompleteTasks(tasksDueToday: [DayTask], overdueTasks: [DayTask]) -> [DayTask] {
     var seen = Set<String>()
     var workingTasks: [DayTask] = []
     for task in tasksDueToday + overdueTasks {
@@ -81,9 +93,14 @@ public func assembleAgenda(
         guard seen.insert(task.externalIdentifier).inserted else { continue }
         workingTasks.append(task)
     }
-    workingTasks.sort(by: taskOrdering)
+    return workingTasks
+}
 
-    return AgendaSnapshot(events: visibleEvents, tasks: workingTasks)
+/// Feature 3: the icon-badge count is just the size of that same working
+/// set - see `mergeIncompleteTasks`'s doc for why this can never drift from
+/// what the agenda itself shows as incomplete.
+public func incompleteTaskCount(tasksDueToday: [DayTask], overdueTasks: [DayTask]) -> Int {
+    mergeIncompleteTasks(tasksDueToday: tasksDueToday, overdueTasks: overdueTasks).count
 }
 
 /// One day's Feature 2 month-view indicators: whether it has any visible

@@ -61,4 +61,17 @@ struct InfoPlistUsageDescriptionTests {
         let extensionDict = plist["NSExtension"] as? [String: Any]
         #expect(extensionDict?["NSExtensionPointIdentifier"] as? String == "com.apple.widgetkit-extension")
     }
+
+    /// DW-F3.4: the app's Info.plist must list the exact identifier
+    /// `BadgeRefreshScheduler` registers/submits under
+    /// `BGTaskSchedulerPermittedIdentifiers` - a mismatch between this
+    /// literal and `BadgeRefreshScheduler.taskIdentifier` fails
+    /// registration/submission silently at runtime with no compile-time
+    /// signal, which is exactly what this static check guards against.
+    @Test("DW-F3.4: app Info.plist declares the badge-refresh BGTaskScheduler identifier")
+    func test_DW_F3_4_appInfoPlistDeclaresBackgroundTaskIdentifier() throws {
+        let plist = try Self.loadPlist(at: "Calenminder/Info.plist")
+        let identifiers = plist["BGTaskSchedulerPermittedIdentifiers"] as? [String]
+        #expect(identifiers?.contains("com.enzonaut.calenminder.badgeRefresh") == true)
+    }
 }

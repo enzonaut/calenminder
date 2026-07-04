@@ -8,12 +8,18 @@ import CalenminderKit
 /// `@Published` state.
 struct AppEnvironment {
     let agendaService: AgendaService
+    /// Feature 3: shared badge orchestrator - built once here so
+    /// `ContentView`'s lifecycle hooks and `BadgeRefreshScheduler` call the
+    /// exact same instance, rather than each computing "today's count"
+    /// independently.
+    let badgeUpdater: BadgeUpdater
 
     /// Production instance: real EventKit-backed stores.
     static func live() -> AppEnvironment {
-        AppEnvironment(agendaService: AgendaService(
+        let agendaService = AgendaService(
             eventStore: EventKitEventStore(),
             taskStore: ReminderTaskStore()
-        ))
+        )
+        return AppEnvironment(agendaService: agendaService, badgeUpdater: BadgeUpdater(agendaService: agendaService))
     }
 }

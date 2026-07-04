@@ -128,6 +128,24 @@ public final class AgendaService {
         return assembleMonthSummary(events: visibleEvents, incompleteTasks: incompleteTasks, window: window, filter: filter)
     }
 
+    /// Feature 3: the icon-badge count for `day` - today's incomplete tasks
+    /// plus the overdue-incomplete lookback, deduped exactly like
+    /// `agenda(for:filter:)`'s own task list (`incompleteTaskCount` shares
+    /// its merge rule with `assembleAgenda` so the two can never disagree),
+    /// computed from two `TaskStoring` fetches only - no events fetch, since
+    /// the badge never needs one. Additive: does not change
+    /// `agenda(for:filter:)`'s contract or behavior. Throws on a genuine
+    /// store failure (e.g. Reminders access denied) exactly like every
+    /// other read path here - callers that want "denial is silently 0"
+    /// (Feature 3's `BadgeUpdater`) make that choice themselves, one layer
+    /// up, the same way `completeTask` already swallows its own failures
+    /// rather than this type doing it silently.
+    public func badgeCount(asOf day: DayStamp) async throws -> Int {
+        async let tasksDueTodayResult = taskStore.tasks(dueOn: day, includeCompleted: false)
+        async let overdueTasksResult = taskStore.incompleteTasks(overdueAsOf: day)
+        return incompleteTaskCount(tasksDueToday: try await tasksDueTodayResult, overdueTasks: try await overdueTasksResult)
+    }
+
     /// Today's completed tasks - deliberately outside `AgendaSnapshot`
     /// (whose `tasks` is documented as the incomplete working set only), for
     /// the agenda UI's collapsible "Completed" section, which is how a task

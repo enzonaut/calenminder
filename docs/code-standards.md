@@ -68,7 +68,8 @@ calenminder/                 # repo root
 ├── CalenminderKit/            # Shared framework: cross-target code, linked by app + widget
 │   ├── Domain/                 # Canonical Event/Task models (pure, no I/O) (Phase 2)
 │   ├── Store/                  # EKEventStore wrappers for events + reminders (Phase 3)
-│   └── Agenda/                 # Agenda assembly, filtering, change coalescing (Phase 4)
+│   ├── Agenda/                 # Agenda assembly, filtering, change coalescing (Phase 4)
+│   └── Badge/                  # Icon-badge counting/authorization/setting seam (Feature 3)
 ├── CalenminderWidget/         # WidgetKit extension (Lock Screen + Home Screen)
 ├── CalenminderIntents/        # Shared App Intents framework target -- scaffolded Phase 1.
 │                               # IMPORTANT: an App Intent invoked by a widget's interactive

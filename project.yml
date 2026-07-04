@@ -32,6 +32,11 @@ targets:
       # mutations; harmless to link from the app process too, and needed so
       # Phase 5's widget-process consumers of this same framework build.
       - sdk: WidgetKit.framework
+      # Feature 3: BadgeUpdater/SystemBadgeSetter (CalenminderKit/Badge) call
+      # UNUserNotificationCenter directly - callable from an app-extension
+      # process too, which is what lets the same BadgeUpdater type be used
+      # from both the app and the widget's CompleteTaskIntent.
+      - sdk: UserNotifications.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder.kit
@@ -75,6 +80,13 @@ targets:
           - CFBundleURLName: com.enzonaut.calenminder
             CFBundleURLSchemes:
               - calenminder
+        # Feature 3: opportunistic badge refresh via BGTaskScheduler
+        # (BadgeRefreshScheduler). No UIBackgroundModes entry is needed -
+        # that key is only required for the older
+        # application(_:performFetchWithCompletionHandler:) API; a
+        # BGAppRefreshTaskRequest needs only this permitted-identifiers list.
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.enzonaut.calenminder.badgeRefresh
     entitlements:
       path: Calenminder/Calenminder.entitlements
       properties:
@@ -90,6 +102,8 @@ targets:
       - target: CalenminderWidgetExtension
         embed: true
         codeSign: true
+      # Feature 3: BadgeRefreshScheduler (app layer) wraps BGTaskScheduler.
+      - sdk: BackgroundTasks.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder
@@ -152,6 +166,11 @@ targets:
       - target: Calenminder
       - target: CalenminderKit
       - target: CalenminderIntents
+      # BadgeRefreshSchedulerTests constructs BGAppRefreshTaskRequest
+      # directly (a plain request object, unlike BGTask/BGAppRefreshTask
+      # which have no public initializer) to assert on submitted-request
+      # shape against a fake BackgroundTaskScheduling.
+      - sdk: BackgroundTasks.framework
       # Not CalenminderWidgetExtension: an app-extension (.appex) product
       # cannot be linked into a unit-test bundle the way a framework can
       # (confirmed -- `@testable import CalenminderWidgetExtension` fails

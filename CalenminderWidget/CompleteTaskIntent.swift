@@ -42,6 +42,19 @@ struct CompleteTaskIntent: AppIntent {
         let agendaService = WidgetEnvironment.liveAgendaService()
         let today = DayStamp(date: .now, calendar: .current)
         await agendaService.completeTask(externalIdentifier: taskExternalIdentifier, referenceDay: today)
+        // Feature 3: the widget-intent path is the other "task mutation"
+        // trigger (alongside the app's AgendaViewModel call sites) - update
+        // regardless of whether completeTask actually did anything, same
+        // reasoning as its own unconditional widget-timeline reload above.
+        // See docs/code-standards.md / the Feature 3 discovery doc for the
+        // documented (not empirically device-verified) verdict on
+        // UNUserNotificationCenter.setBadgeCount from this process, and why
+        // the design does not depend on that verdict either way: every
+        // app foreground/background unconditionally recomputes the full
+        // count from scratch, so even a silently-failed update here is
+        // corrected the moment the app is next foregrounded or backgrounded.
+        let badgeUpdater = WidgetEnvironment.liveBadgeUpdater(agendaService: agendaService)
+        await badgeUpdater.updateBadge()
         return .result()
     }
 }

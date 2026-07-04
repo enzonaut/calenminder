@@ -16,6 +16,12 @@ final class AgendaViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     private let agendaService: AgendaService
+    /// Feature 3: shared badge orchestrator. Defaults to a fresh
+    /// `BadgeUpdater` built over `agendaService` when the caller does not
+    /// supply one - keeps every existing production and test call site of
+    /// this initializer compiling unchanged; tests that care about badge
+    /// behavior inject one built over a fake `BadgeSetting`.
+    private let badgeUpdater: BadgeUpdater
     private let calendar: Calendar
     /// Injectable clock so midnight-rollover behavior is unit-testable; the
     /// production default is the real clock.
@@ -33,12 +39,14 @@ final class AgendaViewModel: ObservableObject {
 
     init(
         agendaService: AgendaService,
+        badgeUpdater: BadgeUpdater? = nil,
         day: DayStamp? = nil,
         calendar: Calendar = .current,
         now: @escaping () -> Date = Date.init,
         notificationCenter: NotificationCenter = .default
     ) {
         self.agendaService = agendaService
+        self.badgeUpdater = badgeUpdater ?? BadgeUpdater(agendaService: agendaService)
         self.calendar = calendar
         self.now = now
         self.notificationCenter = notificationCenter
@@ -125,6 +133,8 @@ final class AgendaViewModel: ObservableObject {
         do {
             let created = try await agendaService.addTask(draft)
             await load()
+            // Feature 3: a new incomplete task can push today's count up.
+            await badgeUpdater.updateBadge()
             return created
         } catch {
             errorMessage = ErrorPresentation.message(for: error)
@@ -156,6 +166,8 @@ final class AgendaViewModel: ObservableObject {
             // rolls to its next occurrence system-side (Phase 3 finding),
             // which the optimistic patch above cannot know how to represent.
             await load()
+            // Feature 3: completing/uncompleting a task changes today's count.
+            await badgeUpdater.updateBadge()
         } catch {
             snapshot = previousSnapshot
             completedToday = previousCompleted
@@ -249,6 +261,20 @@ final class AgendaViewModel: ObservableObject {
         // `AgendaService.reloadWidgets()`'s doc comment for why this is
         // nudged explicitly rather than left to WidgetKit's own budget.
         agendaService.reloadWidgets()
+        // Feature 3 reload trigger: "app foreground" - also the lazy,
+        // once-per-session-effectively point where badge authorization is
+        // first requested (see `BadgeSetting`'s doc comment).
+        await badgeUpdater.updateBadge()
+    }
+
+    /// Called by the root view on `scenePhase` transitioning to
+    /// `.background` (Feature 3's "app background/resign-active" trigger).
+    /// Recomputing here - not just on foreground - means the icon badge
+    /// reflects the state the user is leaving behind (e.g. they just
+    /// completed the last task and are switching apps) rather than staying
+    /// stale until they happen to come back.
+    func handleBackground() async {
+        await badgeUpdater.updateBadge()
     }
 
     /// Midnight rollover while the app stays foregrounded: the system posts

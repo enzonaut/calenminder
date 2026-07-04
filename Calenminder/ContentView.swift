@@ -13,15 +13,21 @@ struct ContentView: View {
     @State private var monthViewModel: MonthViewModel
 
     private let agendaService: AgendaService
+    /// Feature 3: opportunistic BGAppRefreshTask wrapper - registered at app
+    /// launch (`CalenminderApp.init()`) and (re)scheduled here on every
+    /// backgrounding, which is the natural point: the request only ever
+    /// fires once the app is no longer foreground anyway.
+    private let badgeRefreshScheduler: BadgeRefreshScheduler
 
     @Environment(\.scenePhase) private var scenePhase
 
     init(environment: AppEnvironment) {
         agendaService = environment.agendaService
         _onboarding = StateObject(wrappedValue: OnboardingViewModel(agendaService: environment.agendaService))
-        _agenda = StateObject(wrappedValue: AgendaViewModel(agendaService: environment.agendaService))
+        _agenda = StateObject(wrappedValue: AgendaViewModel(agendaService: environment.agendaService, badgeUpdater: environment.badgeUpdater))
         _yearViewModel = State(wrappedValue: YearViewModel())
         _monthViewModel = State(wrappedValue: MonthViewModel(agendaService: environment.agendaService))
+        badgeRefreshScheduler = BadgeRefreshScheduler(badgeUpdater: environment.badgeUpdater)
     }
 
     var body: some View {
@@ -38,12 +44,31 @@ struct ContentView: View {
             Task { await agenda.load() }
         }
         .onChange(of: scenePhase) { _, newPhase in
-            guard newPhase == .active else { return }
-            Task {
-                await onboarding.start()
-                if onboarding.state == .granted {
-                    await agenda.handleForeground()
+            switch newPhase {
+            case .active:
+                Task {
+                    await onboarding.start()
+                    if onboarding.state == .granted {
+                        await agenda.handleForeground()
+                    } else {
+                        // Onboarding isn't granted yet, so the full agenda
+                        // load stays skipped exactly as before - but the
+                        // badge is a separate permission (notifications,
+                        // not Calendars/Reminders), so it's still worth a
+                        // lazy authorization check/recompute on every
+                        // foreground even before onboarding finishes.
+                        // `handleBackground()` is really just "refresh the
+                        // badge alone," which is exactly what's needed here.
+                        await agenda.handleBackground()
+                    }
                 }
+            case .background:
+                Task { await agenda.handleBackground() }
+                badgeRefreshScheduler.schedule()
+            case .inactive:
+                break
+            @unknown default:
+                break
             }
         }
         // Rebuild the Year/Month child view models only when drill-down or

@@ -376,4 +376,74 @@ struct AgendaViewModelTests {
 
         #expect(viewModel.day == day)
     }
+
+    // MARK: - Feature 3: icon-badge lifecycle triggers (DW-F3.2)
+
+    private func makeViewModelWithBadge(
+        tasks: FakeTaskStore = FakeTaskStore(),
+        day: DayStamp? = nil
+    ) -> (AgendaViewModel, FakeBadgeSetter) {
+        let service = AgendaService(eventStore: FakeEventStore(), taskStore: tasks)
+        let badgeSetter = FakeBadgeSetter()
+        let badgeUpdater = BadgeUpdater(agendaService: service, badgeSetting: badgeSetter)
+        let viewModel = AgendaViewModel(agendaService: service, badgeUpdater: badgeUpdater, day: day, calendar: .current)
+        return (viewModel, badgeSetter)
+    }
+
+    @Test("DW-F3.2: handleForeground() also refreshes the icon badge")
+    func test_DW_F3_2_handleForegroundUpdatesBadge() async {
+        let (viewModel, badgeSetter) = makeViewModelWithBadge()
+
+        await viewModel.handleForeground()
+
+        #expect(badgeSetter.appliedCounts.count == 1)
+    }
+
+    @Test("DW-F3.2: handleBackground() refreshes the icon badge")
+    func test_DW_F3_2_handleBackgroundUpdatesBadge() async {
+        let (viewModel, badgeSetter) = makeViewModelWithBadge()
+
+        await viewModel.handleBackground()
+
+        #expect(badgeSetter.appliedCounts.count == 1)
+    }
+
+    @Test("DW-F3.2: a successful addTask refreshes the icon badge with the new count")
+    func test_DW_F3_2_addTaskUpdatesBadge() async {
+        let day = today
+        let (viewModel, badgeSetter) = makeViewModelWithBadge(day: day)
+
+        _ = await viewModel.addTask(TaskDraft(title: "New", dueDay: day))
+
+        #expect(badgeSetter.appliedCounts == [1])
+    }
+
+    @Test("DW-F3.2: toggling a task's completion refreshes the icon badge")
+    func test_DW_F3_2_toggleTaskCompletionUpdatesBadge() async {
+        let day = today
+        let tasks = FakeTaskStore()
+        let task = Fixture.task(id: "t1", due: day)
+        tasks.tasks = [task]
+        let (viewModel, badgeSetter) = makeViewModelWithBadge(tasks: tasks, day: day)
+        await viewModel.load()
+
+        await viewModel.toggleTaskCompletion(task)
+
+        #expect(badgeSetter.appliedCounts == [0])
+    }
+
+    @Test("DW-F3.2: a failed task completion still refreshes the badge only via the store's actual state, not a phantom decrement")
+    func test_DW_F3_2_failedToggleDoesNotUpdateBadge() async {
+        let day = today
+        let tasks = FakeTaskStore()
+        let task = Fixture.task(id: "t1", due: day)
+        tasks.tasks = [task]
+        tasks.setCompletedError = TestError.boom
+        let (viewModel, badgeSetter) = makeViewModelWithBadge(tasks: tasks, day: day)
+        await viewModel.load()
+
+        await viewModel.toggleTaskCompletion(task)
+
+        #expect(badgeSetter.appliedCounts.isEmpty, "a rolled-back mutation must not refresh the badge - nothing actually changed")
+    }
 }

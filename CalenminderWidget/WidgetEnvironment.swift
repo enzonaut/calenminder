@@ -16,4 +16,14 @@ enum WidgetEnvironment {
     static func liveAgendaService() -> AgendaService {
         AgendaService(eventStore: EventKitEventStore(), taskStore: ReminderTaskStore())
     }
+
+    /// Feature 3: a `BadgeUpdater` over the given `agendaService` (pass the
+    /// same instance `liveAgendaService()` just built, so the badge count
+    /// and the completion it is reacting to are computed against the exact
+    /// same stores). Built fresh per call, mirroring `liveAgendaService()`
+    /// itself - see `BadgeUpdater`'s own doc comment on why that statelessness
+    /// is fine for a process that runs once per intent invocation.
+    static func liveBadgeUpdater(agendaService: AgendaService) -> BadgeUpdater {
+        BadgeUpdater(agendaService: agendaService)
+    }
 }

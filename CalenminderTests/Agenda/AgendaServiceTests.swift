@@ -369,4 +369,73 @@ struct AgendaServiceTests {
 
         #expect(reloader.reloadCount == 1)
     }
+
+    // MARK: - Feature 3: badgeCount(asOf:) (DW-F3.1)
+
+    @Test("DW-F3.1: badgeCount combines today's incomplete tasks with the overdue lookback")
+    func test_DW_F3_1_badgeCountCombinesTodayAndOverdueIncomplete() async throws {
+        let tasks = FakeTaskStore()
+        tasks.tasks = [
+            Fixture.task(id: "today", due: today),
+            Fixture.task(id: "overdue", due: DayStamp(year: 2026, month: 7, day: 1)),
+        ]
+        let service = makeService(tasks: tasks)
+
+        let count = try await service.badgeCount(asOf: today)
+
+        #expect(count == 2)
+    }
+
+    @Test("DW-F3.1: badgeCount excludes completed tasks")
+    func test_DW_F3_1_badgeCountExcludesCompletedTasks() async throws {
+        let tasks = FakeTaskStore()
+        tasks.tasks = [
+            Fixture.task(id: "today-open", due: today),
+            Fixture.task(id: "today-done", due: today, completed: true),
+            Fixture.task(id: "overdue-done", due: DayStamp(year: 2026, month: 7, day: 1), completed: true),
+        ]
+        let service = makeService(tasks: tasks)
+
+        let count = try await service.badgeCount(asOf: today)
+
+        #expect(count == 1)
+    }
+
+    @Test("DW-F3.1: badgeCount dedupes a task that would otherwise be counted by both fetches")
+    func test_DW_F3_1_badgeCountDedupesOverlapBetweenTodayAndOverdue() async throws {
+        let tasks = FakeTaskStore()
+        tasks.tasks = [Fixture.task(id: "dup", due: today)]
+        let service = makeService(tasks: tasks)
+
+        let count = try await service.badgeCount(asOf: today)
+
+        // FakeTaskStore's incompleteTasks(overdueAsOf:) includes today (dueDay
+        // <= day), exactly mirroring the real store's documented "on or
+        // before" semantics - the same task appearing in both fetches must
+        // still only count once.
+        #expect(count == 1)
+    }
+
+    @Test("DW-F3.1: badgeCount is zero when there are no incomplete tasks")
+    func test_DW_F3_1_badgeCountIsZeroWhenNoIncompleteTasks() async throws {
+        let service = makeService()
+
+        let count = try await service.badgeCount(asOf: today)
+
+        #expect(count == 0)
+    }
+
+    @Test("DW-F3.1: badgeCount surfaces a store failure rather than silently returning a stale count")
+    func test_DW_F3_1_badgeCountSurfacesStoreFailure() async throws {
+        let tasks = FakeTaskStore()
+        tasks.fetchError = TestError.boom
+        let service = makeService(tasks: tasks)
+
+        do {
+            _ = try await service.badgeCount(asOf: today)
+            Issue.record("expected badgeCount to throw")
+        } catch TestError.boom {
+            // expected
+        }
+    }
 }
