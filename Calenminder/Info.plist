@@ -37,6 +37,8 @@
 	<string>Calenminder shows today's tasks alongside your calendar and completes them when you tap them, so it needs full access to your Reminders.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
