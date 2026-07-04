@@ -58,16 +58,24 @@ struct AgendaView: View {
             .navigationTitle(dayTitle)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
+                    // Deliberately no previous/next-day buttons here: the
+                    // `WeekStripView` pinned above this same NavigationStack
+                    // (see `DayContainerView`) already covers per-day
+                    // stepping (tap any visible day, page by week), so a
+                    // redundant pair of chevrons here only crowded out the
+                    // principal mode switcher below - confirmed missing
+                    // from Day view's toolbar entirely (both visually and in
+                    // the accessibility tree) before this fix; see the
+                    // Feature 4 UI bug-fix discovery doc. `goToPreviousDay()`/
+                    // `goToNextDay()` stay on `AgendaViewModel` (still
+                    // directly unit-tested), just no longer wired to a
+                    // toolbar button.
                     if navigation?.parentMode != nil {
                         Button { navigation?.back() } label: { Image(systemName: "chevron.backward") }
                             .accessibilityIdentifier("agenda-back")
                     }
-                    Button { viewModel.goToPreviousDay() } label: { Image(systemName: "chevron.left") }
-                        .accessibilityIdentifier("agenda-previous-day")
                     Button("Today") { viewModel.goToToday() }
                         .accessibilityIdentifier("agenda-today")
-                    Button { viewModel.goToNextDay() } label: { Image(systemName: "chevron.right") }
-                        .accessibilityIdentifier("agenda-next-day")
                 }
                 if let navigation {
                     ToolbarItem(placement: .principal) {

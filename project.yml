@@ -186,6 +186,25 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder.tests
         GENERATE_INFOPLIST_FILE: YES
 
+  # XCUITest target: real-toolbar/real-layout regression coverage that no
+  # unit test can provide (Swift Testing's `ImageRenderer`-based view-smoke
+  # tests render offscreen with a forced frame, so they cannot catch a
+  # genuine nav-bar toolbar collapse or a grid that silently renders only its
+  # first row - both real bugs found in the Feature 4 UI bug-fix pass).
+  # Simulator-only like the EventKit integration suites; see Makefile
+  # `test-integration`.
+  CalenminderUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: CalenminderUITests
+    dependencies:
+      - target: Calenminder
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder.uitests
+        GENERATE_INFOPLIST_FILE: YES
+
 schemes:
   Calenminder:
     build:
@@ -195,8 +214,10 @@ schemes:
         CalenminderKit: [run, test, analyze, archive]
         CalenminderIntents: [run, test, analyze, archive]
         CalenminderTests: [test]
+        CalenminderUITests: [test]
     test:
       targets:
         - CalenminderTests
+        - CalenminderUITests
     run:
       config: Debug

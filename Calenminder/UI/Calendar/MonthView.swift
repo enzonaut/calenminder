@@ -9,25 +9,13 @@ struct MonthView: View {
     @ObservedObject var navigation: CalendarNavigationViewModel
     @ObservedObject var agenda: AgendaViewModel
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     private var calendar: Calendar { .current }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 weekdayHeader
-                LazyVGrid(columns: columns, spacing: 0) {
-                    ForEach(Array(viewModel.grid.enumerated()), id: \.offset) { _, row in
-                        ForEach(Array(row.enumerated()), id: \.offset) { _, day in
-                            MonthDayCell(
-                                day: day,
-                                isToday: day == viewModel.today,
-                                summary: day.flatMap { viewModel.summaries[$0] }
-                            )
-                            .onTapGesture { selectDay(day) }
-                        }
-                    }
-                }
+                monthGrid
                 Spacer(minLength: 0)
             }
             .navigationTitle(monthTitle)
@@ -68,6 +56,30 @@ struct MonthView: View {
         guard let day else { return }
         agenda.goToDay(day)
         navigation.selectDay()
+    }
+
+    /// Plain `VStack` of `HStack` rows, not `LazyVGrid`: a `LazyVGrid` placed
+    /// directly in a non-scrolling `VStack` only lays out its first row (the
+    /// rest silently collapses to zero height - a real, confirmed bug, not a
+    /// hypothetical one; see the Feature 4 UI bug-fix discovery doc). Every
+    /// week (4-6 rows) must always be visible with no scrolling, matching
+    /// `YearView`'s `MiniMonthView`, which renders this exact same
+    /// row-of-`DayStamp?` shape correctly using this same pattern.
+    private var monthGrid: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(viewModel.grid.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: 0) {
+                    ForEach(Array(row.enumerated()), id: \.offset) { _, day in
+                        MonthDayCell(
+                            day: day,
+                            isToday: day == viewModel.today,
+                            summary: day.flatMap { viewModel.summaries[$0] }
+                        )
+                        .onTapGesture { selectDay(day) }
+                    }
+                }
+            }
+        }
     }
 
     private var weekdayHeader: some View {

@@ -38,6 +38,7 @@
 		3B1582CC4BB804D500545100 /* CalenminderKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2E6710A11840317A58AADFB9 /* CalenminderKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3B260C2D07FB5F08627ED817 /* CalenminderIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93D975347A10FA4663D1366A /* CalenminderIntents.framework */; };
 		3C6B73825B825861DBF9B905 /* WidgetAgendaEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04F95C2EDDFC5CE6F1BA3CFC /* WidgetAgendaEntry.swift */; };
+		3E4A835031327A7D23531698 /* CalendarToolbarLayoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A74968DFD54F823F28E5422 /* CalendarToolbarLayoutUITests.swift */; };
 		4039BB46EF8F6DB389128ED0 /* CalenminderWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D881E1D6573EFC205CF0EE84 /* CalenminderWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		439BE99E37646D3B38636340 /* StoreTestTags.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA68BC824A6D4A05EE17C331 /* StoreTestTags.swift */; };
 		4456CC9812E4346949184C8C /* TaskComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549A142C068E8B91608B3290 /* TaskComposerView.swift */; };
@@ -149,6 +150,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = C106512F87979CB92917D3D9;
 			remoteInfo = CalenminderIntents;
+		};
+		284F3520577D30CDE58441C9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 609D75E8C12126D07341FF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8CBB9D902DB17B3CA7C82FCA;
+			remoteInfo = Calenminder;
 		};
 		303DCBB21F1A9DC7A7B7C90E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -277,6 +285,7 @@
 		2D1C2F94413D97E7F6BC2FAC /* AddTaskControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskControl.swift; sourceTree = "<group>"; };
 		2E6710A11840317A58AADFB9 /* CalenminderKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CalenminderKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F6E90FEFBDAEFB1E04CF89A /* WeekLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekLayout.swift; sourceTree = "<group>"; };
+		302B89F653B5CFA611777355 /* CalenminderUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CalenminderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		31159B82D492ACEACC43DDFE /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		3274C58E09072FB7CFAFDFBC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3786BAB372AE8B71168476A4 /* ViewSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewSmokeTests.swift; sourceTree = "<group>"; };
@@ -299,6 +308,7 @@
 		549A142C068E8B91608B3290 /* TaskComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskComposerView.swift; sourceTree = "<group>"; };
 		56172761E8FCEA6F8CEF68A0 /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
 		58D832B2EECFF9CFBF6C6CDF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		5A74968DFD54F823F28E5422 /* CalendarToolbarLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarToolbarLayoutUITests.swift; sourceTree = "<group>"; };
 		5CC21155A0AC71E4A5B36347 /* TaskDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailViewModel.swift; sourceTree = "<group>"; };
 		5E26CED92420F7BC0418EF2B /* MonthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthView.swift; sourceTree = "<group>"; };
 		5FD36DE2E377B3DA88AC2948 /* YearViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearViewModel.swift; sourceTree = "<group>"; };
@@ -607,10 +617,19 @@
 				F24EE9437DBD18F3D1152A6C /* CalenminderIntents */,
 				E551226D49325DF4393B5ECE /* CalenminderKit */,
 				631C92AE5D35CB67F277EF32 /* CalenminderTests */,
+				9BA5DDD4520DAE15CAFBFCC0 /* CalenminderUITests */,
 				A4F71E7748B99B868515B1A3 /* CalenminderWidget */,
 				D04F9786154923A4F930E6C9 /* Frameworks */,
 				AEAB113D85D81B3A1D3227C1 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		9BA5DDD4520DAE15CAFBFCC0 /* CalenminderUITests */ = {
+			isa = PBXGroup;
+			children = (
+				5A74968DFD54F823F28E5422 /* CalendarToolbarLayoutUITests.swift */,
+			);
+			path = CalenminderUITests;
 			sourceTree = "<group>";
 		};
 		A300C8E6DC8F9454D7AFE6EC /* Routing */ = {
@@ -643,6 +662,7 @@
 				93D975347A10FA4663D1366A /* CalenminderIntents.framework */,
 				2E6710A11840317A58AADFB9 /* CalenminderKit.framework */,
 				C531F577EDC69CC434DBD6F5 /* CalenminderTests.xctest */,
+				302B89F653B5CFA611777355 /* CalenminderUITests.xctest */,
 				D881E1D6573EFC205CF0EE84 /* CalenminderWidgetExtension.appex */,
 			);
 			name = Products;
@@ -784,6 +804,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5409A7ACE94B15941FCC0BAA /* CalenminderUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C1D6C688A67C4E282878CEF6 /* Build configuration list for PBXNativeTarget "CalenminderUITests" */;
+			buildPhases = (
+				B40996105FD03203AEB85FA5 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				20808D276412EAED91EBB081 /* PBXTargetDependency */,
+			);
+			name = CalenminderUITests;
+			packageProductDependencies = (
+			);
+			productName = CalenminderUITests;
+			productReference = 302B89F653B5CFA611777355 /* CalenminderUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		8CBB9D902DB17B3CA7C82FCA /* Calenminder */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = BAF53363BF9D85452A5AF122 /* Build configuration list for PBXNativeTarget "Calenminder" */;
@@ -897,6 +935,11 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					5409A7ACE94B15941FCC0BAA = {
+						DevelopmentTeam = NLTM6254QC;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 8CBB9D902DB17B3CA7C82FCA;
+					};
 					8CBB9D902DB17B3CA7C82FCA = {
 						DevelopmentTeam = NLTM6254QC;
 						ProvisioningStyle = Automatic;
@@ -937,6 +980,7 @@
 				C106512F87979CB92917D3D9 /* CalenminderIntents */,
 				96FEEE7864E9FEE80589A805 /* CalenminderKit */,
 				9DC575F4722D73A04519F41C /* CalenminderTests */,
+				5409A7ACE94B15941FCC0BAA /* CalenminderUITests */,
 				BBC3638C7B272BF606D4F15E /* CalenminderWidgetExtension */,
 			);
 		};
@@ -1053,6 +1097,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B40996105FD03203AEB85FA5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3E4A835031327A7D23531698 /* CalendarToolbarLayoutUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E36C7B6D301E08BCBD8310E3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1112,6 +1164,11 @@
 			target = C106512F87979CB92917D3D9 /* CalenminderIntents */;
 			targetProxy = 1E394AC715F4FB71A6F846A9 /* PBXContainerItemProxy */;
 		};
+		20808D276412EAED91EBB081 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8CBB9D902DB17B3CA7C82FCA /* Calenminder */;
+			targetProxy = 284F3520577D30CDE58441C9 /* PBXContainerItemProxy */;
+		};
 		34FDE1A7B229386C36B1804D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = C106512F87979CB92917D3D9 /* CalenminderIntents */;
@@ -1168,6 +1225,23 @@
 			};
 			name = Debug;
 		};
+		56C1FAADDEB91D49A4B45D7C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.enzonaut.calenminder.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Calenminder;
+			};
+			name = Release;
+		};
 		5E88B75CAFFB9A785C34D139 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1188,6 +1262,23 @@
 				SKIP_INSTALL = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		653F676D788A971BCDBC3D68 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.enzonaut.calenminder.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Calenminder;
 			};
 			name = Debug;
 		};
@@ -1521,6 +1612,15 @@
 			buildConfigurations = (
 				958D2D05001EB42B53FAA511 /* Debug */,
 				BA63E8BECDABC8351015EF25 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C1D6C688A67C4E282878CEF6 /* Build configuration list for PBXNativeTarget "CalenminderUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				653F676D788A971BCDBC3D68 /* Debug */,
+				56C1FAADDEB91D49A4B45D7C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

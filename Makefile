@@ -5,7 +5,15 @@ SIMULATOR_NAME := iPhone 17 Pro
 # Reminders store (DW-3.2, DW-3.3). Per docs/code-standards.md Testing
 # Patterns they stay out of the default `make test` run and are run
 # separately, serially, via `make test-integration`.
-INTEGRATION_SUITES := CalenminderTests/EventKitEventStoreIntegrationTests CalenminderTests/ReminderTaskStoreIntegrationTests CalenminderTests/AgendaServiceIntegrationTests
+#
+# CalenminderUITests/CalendarToolbarLayoutUITests joins this group for the
+# same reason (simulator-only, needs a booted simulator + a real permission
+# grant to com.enzonaut.calenminder) - added in the Feature 4 UI bug-fix pass
+# as regression coverage for a real nav-bar toolbar collapse and a real
+# month-grid rendering collapse, neither of which the offscreen
+# `ImageRenderer`-based view-smoke tests can catch (see that file's header
+# comment and the phase discovery doc).
+INTEGRATION_SUITES := CalenminderTests/EventKitEventStoreIntegrationTests CalenminderTests/ReminderTaskStoreIntegrationTests CalenminderTests/AgendaServiceIntegrationTests CalenminderUITests/CalendarToolbarLayoutUITests
 SKIP_INTEGRATION := $(foreach s,$(INTEGRATION_SUITES),-skip-testing:$(s))
 ONLY_INTEGRATION := $(foreach s,$(INTEGRATION_SUITES),-only-testing:$(s))
 

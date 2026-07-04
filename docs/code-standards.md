@@ -28,6 +28,32 @@ Persist `calendarItemExternalIdentifier` + occurrence date, with predicate re-qu
 **Never call deprecated `requestAccess(to:)`.**
 Use `requestFullAccessToEvents()` / `requestFullAccessToReminders()` (iOS 17+ model).
 
+**Never place a `LazyVGrid`/`LazyVStack` directly inside a non-scrolling container (e.g. a plain
+`VStack`) when every row must always be visible.** Confirmed empirically (Feature 4 UI bug-fix):
+a `LazyVGrid` given to a `VStack` with a trailing `Spacer` rendered only its first row - the rest
+silently collapsed to zero height, with no warning or crash. Fixed-size, always-fully-visible grids
+(a calendar month, a small fixed grid of controls) should use a plain `VStack` of `HStack` rows
+instead - see `MonthView.monthGrid` and `YearView.MiniMonthView`, which render the identical
+`[[DayStamp?]]` row shape correctly. Reserve `LazyVGrid`/`LazyVStack` for content that is actually
+inside a `ScrollView` and large enough to benefit from lazy instantiation.
+
+```swift
+// BAD - only the first row ever renders; rows 2-N silently vanish
+VStack {
+    LazyVGrid(columns: sevenFlexibleColumns) {
+        ForEach(rows) { row in ForEach(row) { DayCell($0) } }
+    }
+    Spacer()
+}
+
+// GOOD - every row is guaranteed visible, no scrolling required
+VStack {
+    ForEach(rows) { row in
+        HStack { ForEach(row) { DayCell($0) } }
+    }
+}
+```
+
 **Never block on synchronous-looking EventKit reminder fetches.**
 Reminders are predicate + completion-handler only; wrap in async and treat results as snapshots that `EKEventStoreChanged` invalidates.
 
@@ -78,7 +104,11 @@ calenminder/                 # repo root
 │                               # Phase 1 spike (see plan Execution Log). This target may still
 │                               # be safe for App Intents invoked only from the app's own
 │                               # process (Siri/Shortcuts); re-verify before relying on that.
-└── CalenminderTests/           # Unit tests (Swift Testing); mirrors source folder names
+├── CalenminderTests/           # Unit tests (Swift Testing); mirrors source folder names
+└── CalenminderUITests/         # XCUITest: real-toolbar/real-layout regression coverage that
+                                # no unit test can give (see Testing Patterns below). Simulator-
+                                # only like the EventKit integration suites -- run via
+                                # `make test-integration`, not the default `make test`.
 ```
 
 Dependency direction: `Domain` imports nothing internal; `Store` imports `Domain`; `Agenda` imports `Store` + `Domain`; `UI` imports all; nothing imports `UI`. `CalenminderKit` (the framework housing `Domain`/`Store`/`Agenda`) is linked+embedded by both `Calenminder` and `CalenminderWidget`.
@@ -91,6 +121,13 @@ Note for Phase 2: `Domain`'s "zero imports of EventKit/UIKit/networking" require
 - Stores are protocol-backed so agenda/filter logic tests run against fakes, never the real event store.
 - Recurrence guard test is mandatory: a series edit must not clobber a detached occurrence.
 - EventKit integration tests hit the simulator's real system store: tag simulator-only, run serially.
+- `ViewSmokeTests` (`ImageRenderer`-based, see that file's header comment) proves a view renders
+  without crashing at a *forced* `.frame(width:390, height:844)` - it cannot catch a toolbar item
+  silently failing to render, or a scrollable/greedy container collapsing to the wrong size,
+  because the forced frame hides exactly that class of bug. `CalenminderUITests` exists
+  specifically to close that gap: it drives the real rendered toolbar/layout on a simulator and
+  asserts on real `XCUIElement.frame`/`.isHittable`, not an offscreen guess. Add a case here (not
+  a `ViewSmokeTests` case) when the defect is "renders, but the wrong thing is visible/tappable."
 
 ## Technology Decisions
 
