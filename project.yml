@@ -1,0 +1,223 @@
+name: Calenminder
+options:
+  bundleIdPrefix: com.enzonaut.calenminder
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    # Swift 5 language mode (not Swift 6 strict concurrency): EventKit's
+    # completion-handler APIs (fetchReminders, etc.) are not Sendable-audited
+    # as of this SDK, and Store-layer code (Phase 3) will call them
+    # extensively. Fighting strict concurrency region checks against an
+    # un-audited system framework is not worth the tax; revisit once Apple
+    # ships a Sendable-safe EventKit async API surface.
+    SWIFT_VERSION: "5"
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    DEVELOPMENT_TEAM: "NLTM6254QC"
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+
+targets:
+  CalenminderKit:
+    type: framework
+    platform: iOS
+    sources:
+      - path: CalenminderKit
+    dependencies:
+      - sdk: EventKit.framework
+      # AgendaService (Phase 4) calls WidgetCenter.reloadAllTimelines() after
+      # mutations; harmless to link from the app process too, and needed so
+      # Phase 5's widget-process consumers of this same framework build.
+      - sdk: WidgetKit.framework
+      # Feature 3: BadgeUpdater/SystemBadgeSetter (CalenminderKit/Badge) call
+      # UNUserNotificationCenter directly - callable from an app-extension
+      # process too, which is what lets the same BadgeUpdater type be used
+      # from both the app and the widget's CompleteTaskIntent.
+      - sdk: UserNotifications.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder.kit
+        GENERATE_INFOPLIST_FILE: YES
+        SKIP_INSTALL: NO
+        DEFINES_MODULE: YES
+
+  CalenminderIntents:
+    type: framework
+    platform: iOS
+    sources:
+      - path: CalenminderIntents
+    dependencies:
+      - target: CalenminderKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder.intents
+        GENERATE_INFOPLIST_FILE: YES
+        SKIP_INSTALL: NO
+        DEFINES_MODULE: YES
+
+  Calenminder:
+    type: application
+    platform: iOS
+    sources:
+      - path: Calenminder
+    info:
+      path: Calenminder/Info.plist
+      properties:
+        CFBundleDevelopmentRegion: en
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        LSRequiresIPhoneOS: true
+        UIRequiresFullScreen: true
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSRemindersFullAccessUsageDescription: "Calenminder shows today's tasks alongside your calendar and completes them when you tap them, so it needs full access to your Reminders."
+        NSCalendarsFullAccessUsageDescription: "Calenminder shows and edits your Apple Calendar events in one agenda, so it needs full access to your Calendars."
+        CFBundleURLTypes:
+          - CFBundleURLName: com.enzonaut.calenminder
+            CFBundleURLSchemes:
+              - calenminder
+        # Feature 3: opportunistic badge refresh via BGTaskScheduler
+        # (BadgeRefreshScheduler). No UIBackgroundModes entry is needed -
+        # that key is only required for the older
+        # application(_:performFetchWithCompletionHandler:) API; a
+        # BGAppRefreshTaskRequest needs only this permitted-identifiers list.
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.enzonaut.calenminder.badgeRefresh
+    entitlements:
+      path: Calenminder/Calenminder.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.enzonaut.calenminder
+    dependencies:
+      - target: CalenminderKit
+        embed: true
+        link: true
+      - target: CalenminderIntents
+        embed: true
+        link: true
+      - target: CalenminderWidgetExtension
+        embed: true
+        codeSign: true
+      # Feature 3: BadgeRefreshScheduler (app layer) wraps BGTaskScheduler.
+      - sdk: BackgroundTasks.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: ""
+
+  CalenminderWidgetExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: CalenminderWidget
+    info:
+      path: CalenminderWidget/Info.plist
+      properties:
+        CFBundleDevelopmentRegion: en
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        NSRemindersFullAccessUsageDescription: "Calenminder shows today's incomplete tasks on the Lock Screen and completes them when you tap them, so it needs full access to your Reminders."
+        NSCalendarsFullAccessUsageDescription: "Calenminder shows today's accepted and tentative calendar events on the Lock Screen, so it needs full access to your Calendars."
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: CalenminderWidget/CalenminderWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.enzonaut.calenminder
+    dependencies:
+      # embed: true (not just link) is required here: App Intents metadata
+      # extraction runs per-bundle at build time, and a framework-declared
+      # AppIntent is only discoverable at runtime by a process whose OWN
+      # bundle embeds that framework. Linking against the app's copy (which
+      # is what `embed: false` produced) compiled fine but the widget
+      # extension process failed to resolve the intent's metadata at
+      # runtime ("Failed to fetch metadata for CompleteSpikeReminderIntent"),
+      # confirmed by the DW-1.2 spike run before this fix.
+      - target: CalenminderKit
+        embed: true
+        codeSign: true
+        link: true
+      - target: CalenminderIntents
+        embed: true
+        codeSign: true
+        link: true
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+      - sdk: AppIntents.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder.widget
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
+
+  CalenminderTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: CalenminderTests
+    dependencies:
+      - target: Calenminder
+      - target: CalenminderKit
+      - target: CalenminderIntents
+      # BadgeRefreshSchedulerTests constructs BGAppRefreshTaskRequest
+      # directly (a plain request object, unlike BGTask/BGAppRefreshTask
+      # which have no public initializer) to assert on submitted-request
+      # shape against a fake BackgroundTaskScheduling.
+      - sdk: BackgroundTasks.framework
+      # Not CalenminderWidgetExtension: an app-extension (.appex) product
+      # cannot be linked into a unit-test bundle the way a framework can
+      # (confirmed -- `@testable import CalenminderWidgetExtension` fails
+      # to link, "Undefined symbols"). WidgetSpikeCompleteIntent's logic is
+      # exercised indirectly: it is byte-for-byte the same algorithm as
+      # CalenminderIntents.CompleteSpikeReminderIntent (which IS
+      # unit-tested below), and its actual runtime behavior was verified
+      # empirically on-device for DW-1.2. Real Store-layer code (Phase 3)
+      # will live in a framework specifically so it stays unit-testable;
+      # this is spike-only scaffolding.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder.tests
+        GENERATE_INFOPLIST_FILE: YES
+
+  # XCUITest target: real-toolbar/real-layout regression coverage that no
+  # unit test can provide (Swift Testing's `ImageRenderer`-based view-smoke
+  # tests render offscreen with a forced frame, so they cannot catch a
+  # genuine nav-bar toolbar collapse or a grid that silently renders only its
+  # first row - both real bugs found in the Feature 4 UI bug-fix pass).
+  # Simulator-only like the EventKit integration suites; see Makefile
+  # `test-integration`.
+  CalenminderUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: CalenminderUITests
+    dependencies:
+      - target: Calenminder
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.enzonaut.calenminder.uitests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  Calenminder:
+    build:
+      targets:
+        Calenminder: [run, test, analyze, archive]
+        CalenminderWidgetExtension: [run, test, analyze, archive]
+        CalenminderKit: [run, test, analyze, archive]
+        CalenminderIntents: [run, test, analyze, archive]
+        CalenminderTests: [test]
+        CalenminderUITests: [test]
+    test:
+      targets:
+        - CalenminderTests
+        - CalenminderUITests
+    run:
+      config: Debug

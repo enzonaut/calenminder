@@ -1,0 +1,65 @@
+SCHEME := Calenminder
+SIMULATOR_NAME := iPhone 17 Pro
+
+# EventKit integration suites hit the simulator's real system Calendars/
+# Reminders store (DW-3.2, DW-3.3). Per docs/code-standards.md Testing
+# Patterns they stay out of the default `make test` run and are run
+# separately, serially, via `make test-integration`.
+#
+# CalenminderUITests/CalendarToolbarLayoutUITests joins this group for the
+# same reason (simulator-only, needs a booted simulator + a real permission
+# grant to com.enzonaut.calenminder) - added in the Feature 4 UI bug-fix pass
+# as regression coverage for a real nav-bar toolbar collapse and a real
+# month-grid rendering collapse, neither of which the offscreen
+# `ImageRenderer`-based view-smoke tests can catch (see that file's header
+# comment and the phase discovery doc).
+#
+# CalenminderUITests/SwipeNavigationUITests joins for the same reason again
+# (Feature 5): real-swipe paging on Day/Week/Month/Year, which needs a real
+# touch/drag gesture on a booted simulator (and, for Day/Month, seeds a real
+# event/task through the composer) - not something any offscreen or fake-
+# store unit test can drive.
+INTEGRATION_SUITES := CalenminderTests/EventKitEventStoreIntegrationTests CalenminderTests/ReminderTaskStoreIntegrationTests CalenminderTests/AgendaServiceIntegrationTests CalenminderUITests/CalendarToolbarLayoutUITests CalenminderUITests/SwipeNavigationUITests
+SKIP_INTEGRATION := $(foreach s,$(INTEGRATION_SUITES),-skip-testing:$(s))
+ONLY_INTEGRATION := $(foreach s,$(INTEGRATION_SUITES),-only-testing:$(s))
+
+.PHONY: generate build test test-integration test-all clean
+
+generate:
+	xcodegen generate
+
+build: generate
+	xcodebuild build \
+		-project Calenminder.xcodeproj \
+		-scheme $(SCHEME) \
+		-destination "platform=iOS Simulator,name=$(SIMULATOR_NAME)" \
+		| xcbeautify || xcodebuild build \
+		-project Calenminder.xcodeproj \
+		-scheme $(SCHEME) \
+		-destination "platform=iOS Simulator,name=$(SIMULATOR_NAME)"
+
+test: generate
+	xcodebuild test \
+		-project Calenminder.xcodeproj \
+		-scheme $(SCHEME) \
+		-destination "platform=iOS Simulator,name=$(SIMULATOR_NAME)" \
+		$(SKIP_INTEGRATION)
+
+# Simulator-only, real-system-store tests. Grant access first, e.g.:
+#   xcrun simctl privacy <udid> grant calendar com.enzonaut.calenminder.tests
+#   xcrun simctl privacy <udid> grant reminders com.enzonaut.calenminder.tests
+test-integration: generate
+	xcodebuild test \
+		-project Calenminder.xcodeproj \
+		-scheme $(SCHEME) \
+		-destination "platform=iOS Simulator,name=$(SIMULATOR_NAME)" \
+		$(ONLY_INTEGRATION)
+
+test-all: generate
+	xcodebuild test \
+		-project Calenminder.xcodeproj \
+		-scheme $(SCHEME) \
+		-destination "platform=iOS Simulator,name=$(SIMULATOR_NAME)"
+
+clean:
+	rm -rf DerivedData
