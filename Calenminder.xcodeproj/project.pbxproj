@@ -64,6 +64,7 @@
 		7C4F3118C637FC6A721167DB /* CalenminderIntents.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 93D975347A10FA4663D1366A /* CalenminderIntents.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7D0FDFDAC445C880A03F0FC3 /* EventEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 078CFDF19FCE00D822F472EB /* EventEditView.swift */; };
 		7D48B59AB0924E838DF82CDA /* DayStampTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83938A2DA0223160A75E2887 /* DayStampTests.swift */; };
+		7D82A86249351E5C71360C63 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4E56F586AF8663E348312AC3 /* Assets.xcassets */; };
 		7D8F3FCD2D96598E46125F58 /* AgendaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26BB9CF095C1D21CA4672154 /* AgendaService.swift */; };
 		7EE6EB8751BC75CD453BABF6 /* WidgetTimelineAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2B0498AE41FF67B04CDE68 /* WidgetTimelineAssembly.swift */; };
 		82EA3846811A9723A13EB61F /* CalendarStoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A926CB785CC763B113FFC662 /* CalendarStoreError.swift */; };
@@ -262,6 +263,7 @@
 		48204915D21008A92790F7C6 /* TaskComposerViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskComposerViewModelTests.swift; sourceTree = "<group>"; };
 		4B39129EBD4B9D266A0D6396 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4D0C10A94124669074A4E7EF /* EventCalendarInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventCalendarInfo.swift; sourceTree = "<group>"; };
+		4E56F586AF8663E348312AC3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		53E8A3945B8A8106B0F337DD /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
 		549A142C068E8B91608B3290 /* TaskComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskComposerView.swift; sourceTree = "<group>"; };
 		56172761E8FCEA6F8CEF68A0 /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
@@ -666,6 +668,7 @@
 		F4A7C2F313695C3AD93858EF /* Calenminder */ = {
 			isa = PBXGroup;
 			children = (
+				4E56F586AF8663E348312AC3 /* Assets.xcassets */,
 				98AD8B2014547EA9C5C20E10 /* Calenminder.entitlements */,
 				9940484BDEECD37D710F50C7 /* CalenminderApp.swift */,
 				58D832B2EECFF9CFBF6C6CDF /* ContentView.swift */,
@@ -683,6 +686,7 @@
 			buildConfigurationList = BAF53363BF9D85452A5AF122 /* Build configuration list for PBXNativeTarget "Calenminder" */;
 			buildPhases = (
 				E36C7B6D301E08BCBD8310E3 /* Sources */,
+				D3E904AF55C4DC2A196B3FB1 /* Resources */,
 				87C67B9496F899B3105D5F53 /* Frameworks */,
 				8EB4118459D057213925A44B /* Embed Foundation Extensions */,
 				419F694F0CBBA22EFEF03535 /* Embed Frameworks */,
@@ -834,6 +838,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D3E904AF55C4DC2A196B3FB1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7D82A86249351E5C71360C63 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		345BF2C97FF409B2573B824D /* Sources */ = {
@@ -1161,7 +1176,7 @@
 		958D2D05001EB42B53FAA511 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = Calenminder/Calenminder.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -1180,7 +1195,7 @@
 		BA63E8BECDABC8351015EF25 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = Calenminder/Calenminder.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
