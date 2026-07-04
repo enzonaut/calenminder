@@ -299,4 +299,81 @@ struct AgendaViewModelTests {
 
         #expect(reloader.reloadCount == 1)
     }
+
+    // MARK: - Feature 2: goToDay(_:) (DW-F2.4)
+
+    @Test("DW-F2.4: goToDay jumps directly to an arbitrary day and reloads")
+    func test_DW_F2_4_goToDayJumpsToArbitraryDayAndReloads() async {
+        let day = today
+        let tasks = FakeTaskStore()
+        let farDay = DayStamp(year: 2026, month: 12, day: 25)
+        tasks.tasks = [Fixture.task(id: "gift", due: farDay)]
+        let (viewModel, _, _) = makeViewModel(tasks: tasks, day: day)
+        await viewModel.load()
+
+        viewModel.goToDay(farDay)
+        try? await Task.sleep(nanoseconds: 50_000_000)
+
+        #expect(viewModel.day == farDay)
+        #expect(viewModel.snapshot.tasks.map(\.externalIdentifier) == ["gift"])
+    }
+
+    @Test("DW-F2.4: goToDay to a day other than today stops following today")
+    func test_DW_F2_4_goToDayUpdatesIsFollowingTodayCorrectly() async {
+        let cal = Fixture.calendar("America/New_York")
+        let clock = MutableClock(Fixture.date(cal, 2026, 7, 3, 12))
+        let service = AgendaService(eventStore: FakeEventStore(), taskStore: FakeTaskStore())
+        let viewModel = AgendaViewModel(
+            agendaService: service, calendar: cal,
+            now: { clock.current }, notificationCenter: NotificationCenter()
+        )
+        await viewModel.load()
+
+        viewModel.goToDay(DayStamp(year: 2026, month: 8, day: 15))
+        try? await Task.sleep(nanoseconds: 50_000_000)
+        #expect(viewModel.day == DayStamp(year: 2026, month: 8, day: 15))
+
+        // Midnight passing while foregrounded must NOT yank a deliberately
+        // chosen day back to the new today - same rule as every other
+        // manual navigation entry point.
+        clock.current = Fixture.date(cal, 2026, 7, 4, 0, 5)
+        await viewModel.handleForeground()
+
+        #expect(viewModel.day == DayStamp(year: 2026, month: 8, day: 15))
+    }
+
+    @Test("DW-F2.4: goToDay landing exactly on today resumes following it")
+    func goToDayLandingOnTodayResumesFollowing() async {
+        let cal = Fixture.calendar("America/New_York")
+        let clock = MutableClock(Fixture.date(cal, 2026, 7, 3, 12))
+        let service = AgendaService(eventStore: FakeEventStore(), taskStore: FakeTaskStore())
+        let viewModel = AgendaViewModel(
+            agendaService: service, calendar: cal,
+            now: { clock.current }, notificationCenter: NotificationCenter()
+        )
+        await viewModel.load()
+        viewModel.goToPreviousDay()
+        try? await Task.sleep(nanoseconds: 50_000_000)
+
+        // Jump (via goToDay, as Month/Week-strip taps do) back onto today.
+        viewModel.goToDay(DayStamp(year: 2026, month: 7, day: 3))
+        try? await Task.sleep(nanoseconds: 50_000_000)
+
+        clock.current = Fixture.date(cal, 2026, 7, 4, 9, 0)
+        await viewModel.handleForeground()
+
+        #expect(viewModel.day == DayStamp(year: 2026, month: 7, day: 4), "landing on today via goToDay should resume following it across midnight")
+    }
+
+    @Test("goToDay to the same day is a no-op (no redundant reload)")
+    func goToDaySameDayIsNoOp() async {
+        let day = today
+        let (viewModel, _, _) = makeViewModel(day: day)
+        await viewModel.load()
+
+        viewModel.goToDay(day)
+        try? await Task.sleep(nanoseconds: 50_000_000)
+
+        #expect(viewModel.day == day)
+    }
 }

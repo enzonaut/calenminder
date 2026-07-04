@@ -36,6 +36,12 @@ public protocol TaskStoring {
     /// Unbounded lookback for rollover display: all still-incomplete tasks whose
     /// due day is on or before `day`.
     func incompleteTasks(overdueAsOf day: DayStamp) async throws -> [DayTask]
+    /// Additive (Feature 2 - month view): incomplete tasks whose due day falls
+    /// within `[start, end]` inclusive. Unlike `incompleteTasks(overdueAsOf:)`,
+    /// this is *bounded* - it exists so a month's per-day incomplete-task
+    /// counts can be assembled from one range fetch instead of either an
+    /// unbounded historical lookback or a per-day fetch loop (28-31 calls).
+    func incompleteTasks(dueBetween start: DayStamp, and end: DayStamp) async throws -> [DayTask]
     func add(_ draft: TaskDraft) async throws -> DayTask
     func setCompleted(_ task: DayTask, _ completed: Bool) async throws
 }

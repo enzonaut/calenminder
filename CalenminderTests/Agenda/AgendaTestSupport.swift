@@ -93,6 +93,14 @@ final class FakeTaskStore: TaskStoring {
         return tasks.filter { $0.dueDay <= day && !$0.isCompleted }
     }
 
+    private(set) var incompleteTasksDueBetweenCallCount = 0
+
+    func incompleteTasks(dueBetween start: DayStamp, and end: DayStamp) async throws -> [DayTask] {
+        incompleteTasksDueBetweenCallCount += 1
+        if let fetchError { throw fetchError }
+        return tasks.filter { $0.dueDay >= start && $0.dueDay <= end && !$0.isCompleted }
+    }
+
     func add(_ draft: TaskDraft) async throws -> DayTask {
         addedDrafts.append(draft)
         let created: DayTask

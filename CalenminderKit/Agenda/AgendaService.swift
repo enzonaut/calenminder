@@ -108,6 +108,26 @@ public final class AgendaService {
         )
     }
 
+    /// Feature 2: per-day event/incomplete-task indicators for Month view,
+    /// covering every civil day `window` spans. Exactly two fetches
+    /// regardless of the window's length (one events window-fetch, one
+    /// bounded incomplete-tasks range-fetch) - never a per-day fetch loop.
+    /// `window` is typically a whole month (`DayWindow(month:calendar:)`),
+    /// but this works for any window; `AgendaService` never needs to know
+    /// "month" is a domain concept - that stays a UI/Month-view detail.
+    public func monthSummary(for window: DayWindow, filter: AgendaFilter) async throws -> [DayStamp: DaySummary] {
+        let firstDay = DayStamp(date: window.start, calendar: window.calendar)
+        let lastDay = DayStamp(date: window.end.addingTimeInterval(-1), calendar: window.calendar)
+
+        async let eventsResult = eventStore.events(in: window)
+        async let tasksResult = taskStore.incompleteTasks(dueBetween: firstDay, and: lastDay)
+
+        let visibleEvents = filterByCalendarVisibility(try await eventsResult)
+        let incompleteTasks = try await tasksResult
+
+        return assembleMonthSummary(events: visibleEvents, incompleteTasks: incompleteTasks, window: window, filter: filter)
+    }
+
     /// Today's completed tasks - deliberately outside `AgendaSnapshot`
     /// (whose `tasks` is documented as the incomplete working set only), for
     /// the agenda UI's collapsible "Completed" section, which is how a task

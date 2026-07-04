@@ -86,6 +86,55 @@ public func assembleAgenda(
     return AgendaSnapshot(events: visibleEvents, tasks: workingTasks)
 }
 
+/// One day's Feature 2 month-view indicators: whether it has any visible
+/// events (a dot, no count) and how many incomplete tasks are due that day
+/// (a small count). Deliberately does not carry the events/tasks themselves -
+/// Month view never needs more than these two facts per day; a day tap loads
+/// the real `AgendaSnapshot` via the existing `agenda(for:filter:)` seam.
+public struct DaySummary: Equatable, Sendable {
+    public let hasEvents: Bool
+    public let incompleteTaskCount: Int
+
+    public init(hasEvents: Bool, incompleteTaskCount: Int) {
+        self.hasEvents = hasEvents
+        self.incompleteTaskCount = incompleteTaskCount
+    }
+}
+
+/// Assemble a `[DayStamp: DaySummary]` for every civil day `window` covers,
+/// from one whole-window events fetch and one whole-window incomplete-tasks
+/// fetch. Pure - see `assembleAgenda`'s doc for why that matters (identical
+/// output for app and any future caller, unit-testable with no I/O).
+///
+/// An event can span multiple civil days (multi-day all-day events, or a
+/// timed event crossing midnight), so membership is tested per day via
+/// `DayWindow.contains` rather than assigning each event to a single bucket -
+/// see the Feature 2 design doc's rejected "pre-bucket by one key" alternative.
+public func assembleMonthSummary(
+    events: [Event],
+    incompleteTasks: [DayTask],
+    window: DayWindow,
+    filter: AgendaFilter
+) -> [DayStamp: DaySummary] {
+    let visibleEvents = events
+        .filter(\.hasValidIdentifier)
+        .filter { filter.includes($0.participation) }
+    let validTasks = incompleteTasks.filter(\.hasValidIdentifier)
+
+    var result: [DayStamp: DaySummary] = [:]
+    var instant = window.start
+    while instant < window.end {
+        let day = DayStamp(date: instant, calendar: window.calendar)
+        guard let dayWindow = DayWindow(day: day, calendar: window.calendar) else { break }
+        let hasEvents = visibleEvents.contains { dayWindow.contains($0) }
+        let incompleteCount = validTasks.count { $0.dueDay == day }
+        result[day] = DaySummary(hasEvents: hasEvents, incompleteTaskCount: incompleteCount)
+        guard let next = window.calendar.date(byAdding: .day, value: 1, to: instant) else { break }
+        instant = next
+    }
+    return result
+}
+
 /// Chronological interleave order: all-day events first (they have no meaningful
 /// time), then timed events by start. Ties are broken deterministically by end,
 /// title, then occurrence date so ordering is stable and testable.

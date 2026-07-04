@@ -254,6 +254,112 @@ struct AgendaServiceTests {
         #expect(reloader.reloadCount == 1)
     }
 
+    // MARK: - Feature 2: monthSummary(for:filter:) (DW-F2.1)
+
+    private var monthWindow: DayWindow { DayWindow(month: MonthStamp(year: 2026, month: 7), calendar: cal)! }
+
+    @Test("DW-F2.1: monthSummary marks hasEvents per agenda-filter participation semantics")
+    func test_DW_F2_1_monthSummaryMarksHasEventsPerAgendaFilterSemantics() async throws {
+        let events = FakeEventStore()
+        events.events = [
+            Fixture.event(id: "acc", start: Fixture.date(cal, 2026, 7, 3, 9), end: Fixture.date(cal, 2026, 7, 3, 10), status: .accepted),
+            Fixture.event(id: "dec", start: Fixture.date(cal, 2026, 7, 5, 9), end: Fixture.date(cal, 2026, 7, 5, 10), status: .declined),
+        ]
+        let service = makeService(events: events)
+
+        let summary = try await service.monthSummary(for: monthWindow, filter: .agenda)
+
+        #expect(summary[DayStamp(year: 2026, month: 7, day: 3)]?.hasEvents == true)
+        // .agenda excludes declined invitations - no event dot for that day.
+        #expect(summary[DayStamp(year: 2026, month: 7, day: 5)]?.hasEvents == false)
+    }
+
+    @Test("DW-F2.1: monthSummary excludes events on calendars the user has hidden")
+    func test_DW_F2_1_monthSummaryExcludesHiddenCalendarEvents() async throws {
+        let events = FakeEventStore()
+        events.events = [
+            Fixture.event(id: "hidden", start: Fixture.date(cal, 2026, 7, 10, 9), end: Fixture.date(cal, 2026, 7, 10, 10), calendar: "hidden"),
+        ]
+        let visibility = FakeCalendarVisibilityStore()
+        visibility.setVisible(false, calendarIdentifier: "hidden")
+        let service = makeService(events: events, visibility: visibility)
+
+        let summary = try await service.monthSummary(for: monthWindow, filter: .agenda)
+
+        #expect(summary[DayStamp(year: 2026, month: 7, day: 10)]?.hasEvents == false)
+    }
+
+    @Test("DW-F2.1: monthSummary counts incomplete tasks per day")
+    func test_DW_F2_1_monthSummaryCountsIncompleteTasksPerDay() async throws {
+        let tasks = FakeTaskStore()
+        tasks.tasks = [
+            Fixture.task(id: "t1", due: DayStamp(year: 2026, month: 7, day: 12)),
+            Fixture.task(id: "t2", due: DayStamp(year: 2026, month: 7, day: 12)),
+            Fixture.task(id: "t3", due: DayStamp(year: 2026, month: 7, day: 13)),
+        ]
+        let service = makeService(tasks: tasks)
+
+        let summary = try await service.monthSummary(for: monthWindow, filter: .agenda)
+
+        #expect(summary[DayStamp(year: 2026, month: 7, day: 12)]?.incompleteTaskCount == 2)
+        #expect(summary[DayStamp(year: 2026, month: 7, day: 13)]?.incompleteTaskCount == 1)
+    }
+
+    @Test("DW-F2.1: monthSummary does not count completed tasks")
+    func test_DW_F2_1_monthSummaryExcludesCompletedTasks() async throws {
+        let tasks = FakeTaskStore()
+        tasks.tasks = [
+            Fixture.task(id: "done", due: DayStamp(year: 2026, month: 7, day: 14), completed: true),
+            Fixture.task(id: "open", due: DayStamp(year: 2026, month: 7, day: 14), completed: false),
+        ]
+        let service = makeService(tasks: tasks)
+
+        let summary = try await service.monthSummary(for: monthWindow, filter: .agenda)
+
+        #expect(summary[DayStamp(year: 2026, month: 7, day: 14)]?.incompleteTaskCount == 1)
+    }
+
+    @Test("DW-F2.1: monthSummary marks every day a multi-day all-day event spans")
+    func test_DW_F2_1_monthSummaryHandlesMultiDayAllDayEvent() async throws {
+        let events = FakeEventStore()
+        events.events = [
+            Fixture.event(
+                id: "trip",
+                start: Fixture.date(cal, 2026, 7, 20, 0),
+                end: Fixture.date(cal, 2026, 7, 23, 0),
+                allDay: true
+            ),
+        ]
+        let service = makeService(events: events)
+
+        let summary = try await service.monthSummary(for: monthWindow, filter: .agenda)
+
+        #expect(summary[DayStamp(year: 2026, month: 7, day: 20)]?.hasEvents == true)
+        #expect(summary[DayStamp(year: 2026, month: 7, day: 21)]?.hasEvents == true)
+        #expect(summary[DayStamp(year: 2026, month: 7, day: 22)]?.hasEvents == true)
+        #expect(summary[DayStamp(year: 2026, month: 7, day: 23)]?.hasEvents == false)
+    }
+
+    @Test("DW-F2.1: an empty month has no indicators on any day")
+    func test_DW_F2_1_monthSummaryEmptyMonthHasNoIndicators() async throws {
+        let service = makeService()
+
+        let summary = try await service.monthSummary(for: monthWindow, filter: .agenda)
+
+        #expect(summary.count == 31)
+        #expect(summary.values.allSatisfy { $0.hasEvents == false && $0.incompleteTaskCount == 0 })
+    }
+
+    @Test("DW-F2.1: monthSummary fetches tasks with exactly one bounded range call, never per-day")
+    func test_DW_F2_1_monthSummaryFetchesTasksOnce() async throws {
+        let tasks = FakeTaskStore()
+        let service = makeService(tasks: tasks)
+
+        _ = try await service.monthSummary(for: monthWindow, filter: .agenda)
+
+        #expect(tasks.incompleteTasksDueBetweenCallCount == 1)
+    }
+
     @Test("Phase 5: reloadWidgets() triggers a widget reload with no store call")
     func test_reloadWidgetsTriggersReload() async throws {
         let reloader = FakeWidgetReloader()

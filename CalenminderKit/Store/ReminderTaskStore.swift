@@ -53,6 +53,22 @@ public final class ReminderTaskStore: TaskStoring {
             .map(Self.task(from:))
     }
 
+    /// Feature 2's bounded month-range fetch. Reuses the *same* single
+    /// provider call `tasks(dueOn:)` already makes (`fetchReminders(calendarIdentifier:)`
+    /// - an unbounded-but-single "everything in this list" fetch), just
+    /// filtered to a day range in memory instead of one day. No
+    /// `ReminderProviding`/`FixtureCalendarProvider` change is needed: the
+    /// provider seam already returns everything in one call, so a range
+    /// filter costs nothing extra at the store layer.
+    public func incompleteTasks(dueBetween start: DayStamp, and end: DayStamp) async throws -> [DayTask] {
+        try await ensureAccess()
+        let listID = try resolvedListID()
+        return await provider.fetchReminders(calendarIdentifier: listID)
+            .filter { !$0.isCompleted }
+            .map(Self.task(from:))
+            .filter { $0.dueDay >= start && $0.dueDay <= end }
+    }
+
     public func add(_ draft: TaskDraft) async throws -> DayTask {
         try await ensureAccess()
         let listID = try resolvedListID()

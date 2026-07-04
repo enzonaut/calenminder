@@ -87,6 +87,18 @@ final class AgendaViewModel: ObservableObject {
         Task { await load() }
     }
 
+    /// Feature 2: jump directly to an arbitrary day (a Month-view day tap, or
+    /// a Week-strip tap) - unlike `shiftDay`, the target is not relative to
+    /// the current day. Same "is this still following today" bookkeeping as
+    /// every other day-changing entry point: landing exactly on today counts
+    /// as following it again, landing anywhere else is a deliberate choice.
+    func goToDay(_ newDay: DayStamp) {
+        guard newDay != day else { return }
+        day = newDay
+        isFollowingToday = day == DayStamp(date: now(), calendar: calendar)
+        Task { await load() }
+    }
+
     func goToPreviousDay() {
         shiftDay(by: -1)
     }

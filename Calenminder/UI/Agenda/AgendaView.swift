@@ -3,6 +3,11 @@ import CalenminderKit
 
 struct AgendaView: View {
     @ObservedObject var viewModel: AgendaViewModel
+    /// Feature 2: when supplied, renders the Year/Month/Day mode switcher in
+    /// this view's own toolbar. `nil` (the default) preserves this view's
+    /// exact pre-Feature-2 behavior and toolbar for any caller that does not
+    /// pass one (e.g. existing tests constructing `AgendaView` directly).
+    var navigation: CalendarNavigationViewModel?
 
     @State private var selectedEvent: Event?
     @State private var showingEventComposer = false
@@ -53,12 +58,21 @@ struct AgendaView: View {
             .navigationTitle(dayTitle)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
+                    if navigation?.parentMode != nil {
+                        Button { navigation?.back() } label: { Image(systemName: "chevron.backward") }
+                            .accessibilityIdentifier("agenda-back")
+                    }
                     Button { viewModel.goToPreviousDay() } label: { Image(systemName: "chevron.left") }
                         .accessibilityIdentifier("agenda-previous-day")
                     Button("Today") { viewModel.goToToday() }
                         .accessibilityIdentifier("agenda-today")
                     Button { viewModel.goToNextDay() } label: { Image(systemName: "chevron.right") }
                         .accessibilityIdentifier("agenda-next-day")
+                }
+                if let navigation {
+                    ToolbarItem(placement: .principal) {
+                        CalendarModeSwitcher(navigation: navigation, agenda: viewModel)
+                    }
                 }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button { showingCalendarSettings = true } label: { Image(systemName: "calendar.badge.clock") }

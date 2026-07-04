@@ -34,6 +34,19 @@ public struct DayWindow: Equatable, Sendable {
         self.init(start: start, end: end, calendar: calendar)
     }
 
+    /// The window covering a whole civil `month` in `calendar`:
+    /// `[startOfDay(month.firstDay), startOfDay(next month's 1st))`. `nil`
+    /// only if the month's boundaries do not resolve to real dates in
+    /// `calendar`. Used for the Feature 2 month-summary fetch: one multi-day
+    /// window, never a per-day fetch loop (see `AgendaService.monthSummary`).
+    public init?(month: MonthStamp, calendar: Calendar) {
+        guard
+            let start = month.firstDay.startOfDay(in: calendar),
+            let end = calendar.date(byAdding: .month, value: 1, to: start)
+        else { return nil }
+        self.init(start: start, end: end, calendar: calendar)
+    }
+
     /// Whether `event` is visible in this window.
     public func contains(_ event: Event) -> Bool {
         if event.isAllDay {

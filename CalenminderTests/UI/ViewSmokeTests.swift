@@ -142,6 +142,75 @@ struct ViewSmokeTests {
         #expect(size != nil && size!.width > 0 && size!.height > 0)
     }
 
+    // MARK: - Feature 2: Year/Month/Day-with-week-strip smoke tests
+
+    @Test("DW-F2.2: MonthView renders for empty, populated, and error states without crashing")
+    func test_DW_F2_2_monthViewRendersAcrossStates() async {
+        let agenda = makeAgenda()
+        let navigation = CalendarNavigationViewModel()
+
+        // Empty month.
+        let emptyMonthVM = MonthViewModel(agendaService: AgendaService(eventStore: FakeEventStore(), taskStore: FakeTaskStore()), month: MonthStamp(year: 2026, month: 7), calendar: .current)
+        await emptyMonthVM.load()
+        var size = ViewRenderProbe.renderedSize(MonthView(viewModel: emptyMonthVM, navigation: navigation, agenda: agenda))
+        #expect(size != nil && size!.width > 0 && size!.height > 0, "MonthView failed to render empty state")
+
+        // Populated (events + tasks).
+        let events = FakeEventStore()
+        events.events = [Fixture.event(id: "e1", start: Fixture.date(Fixture.calendar(), 2026, 7, 10, 9), end: Fixture.date(Fixture.calendar(), 2026, 7, 10, 10))]
+        let tasks = FakeTaskStore()
+        tasks.tasks = [Fixture.task(id: "t1", due: DayStamp(year: 2026, month: 7, day: 10))]
+        let populatedMonthVM = MonthViewModel(agendaService: AgendaService(eventStore: events, taskStore: tasks), month: MonthStamp(year: 2026, month: 7), calendar: .current)
+        await populatedMonthVM.load()
+        size = ViewRenderProbe.renderedSize(MonthView(viewModel: populatedMonthVM, navigation: navigation, agenda: agenda))
+        #expect(size != nil && size!.width > 0 && size!.height > 0, "MonthView failed to render populated state")
+
+        // Error.
+        let failingEvents = FakeEventStore()
+        failingEvents.fetchError = TestError.boom
+        let errorMonthVM = MonthViewModel(agendaService: AgendaService(eventStore: failingEvents, taskStore: FakeTaskStore()), month: MonthStamp(year: 2026, month: 7), calendar: .current)
+        await errorMonthVM.load()
+        #expect(errorMonthVM.errorMessage != nil)
+        size = ViewRenderProbe.renderedSize(MonthView(viewModel: errorMonthVM, navigation: navigation, agenda: agenda))
+        #expect(size != nil && size!.width > 0 && size!.height > 0, "MonthView failed to render error state")
+    }
+
+    @Test("DW-F2.3: YearView renders 12 mini-months without crashing")
+    func test_DW_F2_3_yearViewRenders() {
+        let agenda = makeAgenda()
+        let navigation = CalendarNavigationViewModel()
+        let viewModel = YearViewModel(year: 2026, calendar: .current)
+
+        let size = ViewRenderProbe.renderedSize(YearView(viewModel: viewModel, navigation: navigation, agenda: agenda))
+
+        #expect(size != nil && size!.width > 0 && size!.height > 0)
+    }
+
+    @Test("DW-F2.4: DayContainerView (week strip + agenda) renders without crashing")
+    func test_DW_F2_4_dayContainerViewRenders() async {
+        let agenda = makeAgenda()
+        await agenda.load()
+        let navigation = CalendarNavigationViewModel()
+
+        let size = ViewRenderProbe.renderedSize(DayContainerView(agenda: agenda, navigation: navigation))
+
+        #expect(size != nil && size!.width > 0 && size!.height > 0)
+    }
+
+    @Test("DW-F2.5: AgendaView renders with the mode switcher present (Day mode reached via drill-down)")
+    func test_DW_F2_5_agendaViewRendersWithSwitcher() async {
+        let agenda = makeAgenda()
+        await agenda.load()
+        let navigation = CalendarNavigationViewModel(mode: .year(2026))
+        navigation.selectMonth(MonthStamp(year: 2026, month: 7))
+        navigation.selectDay()
+        #expect(navigation.parentMode != nil, "reached Day via drill-down, so a back button should be available")
+
+        let size = ViewRenderProbe.renderedSize(AgendaView(viewModel: agenda, navigation: navigation))
+
+        #expect(size != nil && size!.width > 0 && size!.height > 0)
+    }
+
     @Test("CalendarVisibilityView renders without crashing")
     func calendarVisibilityViewRenders() async {
         let directory = FakeCalendarDirectory()

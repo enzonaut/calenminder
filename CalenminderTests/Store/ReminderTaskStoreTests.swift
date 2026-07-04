@@ -66,6 +66,42 @@ struct ReminderTaskStoreTests {
         #expect(Set(overdue.map(\.externalIdentifier)) == ["past", "today"])
     }
 
+    // MARK: - DW-F2.1: bounded month-range incomplete-task fetch
+
+    @Test("DW-F2.1: incompleteTasks(dueBetween:and:) returns only incomplete tasks whose due day falls in range")
+    func test_DW_F2_1_incompleteTasksDueBetweenBoundsCorrectly() async throws {
+        let provider = FixtureCalendarProvider()
+        let listID = try provider.taskListCalendar(named: ReminderTaskStore.listName)
+        provider.reminders = [
+            (RawReminderRecord(externalIdentifier: "before", title: "Before", dueDay: components(2026, 6, 30), isCompleted: false, recurrenceWeekday: nil), listID),
+            (RawReminderRecord(externalIdentifier: "inRange", title: "In range", dueDay: components(2026, 7, 15), isCompleted: false, recurrenceWeekday: nil), listID),
+            (RawReminderRecord(externalIdentifier: "after", title: "After", dueDay: components(2026, 8, 1), isCompleted: false, recurrenceWeekday: nil), listID),
+            (RawReminderRecord(externalIdentifier: "doneInRange", title: "Done in range", dueDay: components(2026, 7, 16), isCompleted: true, recurrenceWeekday: nil), listID),
+        ]
+        let store = ReminderTaskStore(provider: provider)
+
+        let tasks = try await store.incompleteTasks(
+            dueBetween: DayStamp(year: 2026, month: 7, day: 1),
+            and: DayStamp(year: 2026, month: 7, day: 31)
+        )
+
+        #expect(tasks.map(\.externalIdentifier) == ["inRange"])
+    }
+
+    @Test("DW-F2.1: incompleteTasks(dueBetween:and:) requires access, same as every other reminder read")
+    func test_DW_F2_1_incompleteTasksDueBetweenDeniedThrowsAccessDenied() async throws {
+        let provider = FixtureCalendarProvider()
+        provider.reminderAuthStatus = .denied
+        let store = ReminderTaskStore(provider: provider)
+
+        do {
+            _ = try await store.incompleteTasks(dueBetween: DayStamp(year: 2026, month: 7, day: 1), and: DayStamp(year: 2026, month: 7, day: 31))
+            Issue.record("expected accessDenied")
+        } catch CalendarStoreError.accessDenied(let type) {
+            #expect(type == .reminder)
+        }
+    }
+
     // MARK: - DW-3.1: add / dedicated list
 
     @Test("DW-3.1: add(_:) creates the dedicated task list on first use")
