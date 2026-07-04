@@ -74,6 +74,73 @@ struct AgendaViewModelTests {
         #expect(viewModel.completedToday.map(\.externalIdentifier) == ["t1"])
     }
 
+    /// Regression for the checkmark-completion race: a real device/simulator
+    /// tap on the task-row checkmark did not reliably stick, even though this
+    /// method and `ReminderTaskStore`'s round-trip are each independently
+    /// green - see the checkmark-race discovery doc. Root cause was
+    /// `AgendaViewModel.load()` running unbounded concurrent fetches: every
+    /// mutation reloads once explicitly, and `listenForStoreChanges()`
+    /// reloads again on every `EKEventStoreChanged` notification - including
+    /// the one the mutation's own write just caused. Two concurrent fetches
+    /// racing to assign `snapshot`/`completedToday` meant whichever
+    /// *finished* last won, not whichever was freshest, so a reload whose
+    /// read raced ahead of the write's propagation could stomp the correct,
+    /// just-applied completed state back to incomplete.
+    ///
+    /// `FakeTaskStore` never fired its own `changes` stream inside
+    /// `setCompleted` (unlike the real `ReminderTaskStore`, whose write goes
+    /// through `EKEventStore`, which posts `EKEventStoreChanged` for its own
+    /// writes too) - which is exactly why this race was invisible to every
+    /// existing unit/integration test despite being real on-device. This
+    /// test closes that gap by firing the change signal itself, from the
+    /// same store instance, mid-mutation.
+    @Test("A self-fired store-change notification racing a task completion's own reload does not revert the completed state")
+    func selfFiredChangeDuringCompletionDoesNotRevertState() async {
+        let day = today
+        let tasks = FakeTaskStore()
+        let task = Fixture.task(id: "t1", due: day)
+        tasks.tasks = [task]
+        let (viewModel, _, _) = makeViewModel(tasks: tasks, day: day)
+        await viewModel.load()
+
+        // Simulate the self-originated `EKEventStoreChanged` notification a
+        // real completion write triggers, landing while the mutation's own
+        // explicit reload is still in flight - the exact interleaving that
+        // used to corrupt `snapshot`/`completedToday`.
+        async let toggle: Void = viewModel.toggleTaskCompletion(task)
+        tasks.fireChange()
+        await toggle
+
+        // Give the change-listener's `Task` a chance to run its (now
+        // coalesced, not racing) follow-up reload.
+        try? await Task.sleep(nanoseconds: 50_000_000)
+
+        #expect(viewModel.snapshot.tasks.isEmpty, "the task must stay off the incomplete working set")
+        #expect(viewModel.completedToday.map(\.externalIdentifier) == ["t1"], "the task must stay marked completed")
+    }
+
+    @Test("Concurrent load() calls coalesce into far fewer than one fetch per call")
+    func concurrentLoadsCoalesceRatherThanRaceEachOthersFetch() async {
+        let day = today
+        let tasks = FakeTaskStore()
+        tasks.tasks = [Fixture.task(id: "t1", due: day)]
+        let (viewModel, _, _) = makeViewModel(tasks: tasks, day: day)
+
+        await withTaskGroup(of: Void.self) { group in
+            for _ in 0..<5 {
+                group.addTask { await viewModel.load() }
+            }
+        }
+
+        // Uncoalesced, 5 overlapping `load()` calls would each independently
+        // fetch (2 calls to `tasks(dueOn:)` per fetch - `agenda(for:)` and
+        // `completedTasks(dueOn:)` each need one - so 10 total). The
+        // coalescing guard collapses that to at most one in-flight fetch
+        // plus one queued follow-up, well under half that.
+        #expect(tasks.tasksDueOnCallCount < 10, "overlapping load() calls should coalesce, not each run their own fetch")
+        #expect(viewModel.snapshot.tasks.map(\.externalIdentifier) == ["t1"])
+    }
+
     @Test("DW-4.3: a failed task completion rolls back the optimistic snapshot and surfaces an error")
     func failedTaskCompletionRollsBack() async {
         let day = today

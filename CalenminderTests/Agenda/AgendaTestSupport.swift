@@ -83,7 +83,14 @@ final class FakeTaskStore: TaskStoring {
 
     func fireChange() { continuation.yield(()) }
 
+    /// Counts real fetches - lets a test prove `AgendaViewModel.load()`'s
+    /// reload-coalescing guard collapses N overlapping requests into far
+    /// fewer than N real fetches (the checkmark-completion race regression;
+    /// see `AgendaViewModelTests.concurrentLoadsCoalesceRatherThanRaceEachOthersFetch`).
+    private(set) var tasksDueOnCallCount = 0
+
     func tasks(dueOn day: DayStamp, includeCompleted: Bool) async throws -> [DayTask] {
+        tasksDueOnCallCount += 1
         if let fetchError { throw fetchError }
         return tasks.filter { $0.dueDay == day && (includeCompleted || !$0.isCompleted) }
     }

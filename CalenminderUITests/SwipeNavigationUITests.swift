@@ -70,8 +70,9 @@ final class SwipeNavigationUITests: XCTestCase {
     /// flake was observed against this simulator's Reminders store during
     /// this feature's manual verification, independent of the swipe gesture
     /// (reproduced identically with `daySwipeGesture` removed entirely) -
-    /// flagged separately as a pre-existing, out-of-scope finding rather than
-    /// asserted on here.
+    /// since root-caused (a concurrent-reload race in
+    /// `AgendaViewModel.load()`), fixed, and permanently guarded by
+    /// `test_checkmarkTapCompletionRoundTripSticksEveryTime` below.
     func test_DW_F5_1_dayCheckmarkTapDoesNotPageTheDay() throws {
         let app = XCUIApplication()
         app.launch()
@@ -99,6 +100,7 @@ final class SwipeNavigationUITests: XCTestCase {
         }
         XCTAssertTrue(incompleteCircles.firstMatch.waitForExistence(timeout: 5), "seeded task's checkmark button should exist")
 
+        let circlesBeforeTap = incompleteCircles.count
         incompleteCircles.firstMatch.tap()
         // Give any (correctly-scoped, horizontal-dominant) gesture recognizer
         // time to have misfired if it were going to.
@@ -106,7 +108,117 @@ final class SwipeNavigationUITests: XCTestCase {
 
         XCTAssertEqual(currentTitle(app), titleBefore, "tapping the checkmark must not page the displayed day")
         XCTAssertTrue(app.otherElements["root-agenda"].exists, "the agenda must still be showing (no crash) after the tap")
-        XCTAssertTrue(incompleteCircles.firstMatch.isHittable, "the checkmark region must remain hittable after the tap, not consumed by a swipe")
+        // The tap must land as a button tap (not be consumed by any gesture):
+        // the tapped task completes and its circle leaves the incomplete
+        // working set. This assertion previously checked the circle was
+        // *still hittable* - which only ever passed because the completion
+        // race (since fixed) could leave the tapped task incomplete; the
+        // intended behavior is the opposite.
+        let completedOne = expectation(for: NSPredicate(format: "count == \(circlesBeforeTap - 1)"), evaluatedWith: incompleteCircles)
+        XCTAssertEqual(XCTWaiter().wait(for: [completedOne], timeout: 5), .completed, "the tapped checkmark's task should complete (circle count \(circlesBeforeTap) -> \(circlesBeforeTap - 1)), proving the tap was not consumed by a swipe")
+    }
+
+    // MARK: - Checkmark completion-race regression (pre-existing bug, fixed)
+
+    /// Regression guard for the checkmark-completion race: a real tap on the
+    /// task-row checkmark completed the task in the store, but the displayed
+    /// state could revert to incomplete moments later. Root cause was
+    /// `AgendaViewModel.load()` running unbounded concurrent fetches - the
+    /// mutation's own post-write reload raced the `EKEventStoreChanged`-
+    /// triggered reload the write itself caused, and whichever fetch
+    /// *finished* last (not whichever was freshest) overwrote
+    /// `snapshot`/`completedToday`. Baseline before the coalescing fix:
+    /// 3/10 real taps in this exact loop failed to settle (clustered right
+    /// after launch, when the race window is widest); after: 0/10. See the
+    /// checkmark-race discovery doc
+    /// (`.code-foundations/build/2026-07-03-calenminder-checkmark-bug-discovery.md`)
+    /// and `AgendaViewModelTests.selfFiredChangeDuringCompletionDoesNotRevertState`
+    /// (the unit-level pin on the same interleaving).
+    ///
+    /// Ten iterations, deliberately: a single tap passed even before the fix
+    /// most of the time - only repetition (especially the first taps after
+    /// launch) reproduces the race reliably enough to guard against it.
+    /// The final leg uncompletes one task from the expanded Completed
+    /// section - the identical `toggleTaskCompletion` -> `load()` path in
+    /// the opposite direction, exposed to the same race.
+    func test_checkmarkTapCompletionRoundTripSticksEveryTime() throws {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.otherElements["root-agenda"].waitForExistence(timeout: 10))
+
+        let list = app.descendants(matching: .any).matching(identifier: "agenda-list").firstMatch
+        XCTAssertTrue(list.waitForExistence(timeout: 5))
+
+        let incompleteCircles = app.buttons.matching(NSPredicate(format: "label == 'circle'"))
+
+        // Drain any incomplete tasks left over from earlier suite runs so
+        // every iteration below starts from a known "exactly one incomplete
+        // task" state.
+        var drainGuard = 0
+        while incompleteCircles.firstMatch.exists, drainGuard < 20 {
+            incompleteCircles.firstMatch.tap()
+            sleep(2)
+            drainGuard += 1
+        }
+
+        var failures: [Int] = []
+        for iteration in 1...10 {
+            seedTask(app, title: "Race Repro \(iteration)-\(UUID().uuidString.prefix(6))")
+            for _ in 0..<5 where !incompleteCircles.firstMatch.exists { list.swipeUp() }
+            XCTAssertTrue(incompleteCircles.firstMatch.waitForExistence(timeout: 5), "iteration \(iteration): seeded task's circle should appear")
+
+            incompleteCircles.firstMatch.tap()
+
+            let settled = expectation(for: NSPredicate(format: "count == 0"), evaluatedWith: incompleteCircles)
+            let result = XCTWaiter().wait(for: [settled], timeout: 3)
+            if result != .completed {
+                failures.append(iteration)
+                // Recover so the next iteration starts clean regardless of
+                // this iteration's outcome.
+                if incompleteCircles.firstMatch.exists {
+                    incompleteCircles.firstMatch.tap()
+                    sleep(2)
+                }
+            }
+        }
+
+        print("CHECKMARK_RACE_BASELINE: \(failures.count)/10 iterations failed to settle to completed. Failing iterations: \(failures)")
+        XCTAssertTrue(failures.isEmpty, "expected all 10 real checkmark taps to complete without reverting; failed iterations: \(failures)")
+
+        // Uncomplete leg: expand the Completed section and tap one completed
+        // task's checkmark - the exact same `toggleTaskCompletion` ->
+        // `load()` path, opposite direction. The task must come back to the
+        // incomplete working set and *stay* there (no race-driven revert).
+        // The DisclosureGroup's header is exposed as a button labeled
+        // "Completed"; its rows only enter the accessibility tree once
+        // expanded.
+        let completedHeader = app.buttons["Completed"]
+        for _ in 0..<5 where !completedHeader.exists { list.swipeUp() }
+        XCTAssertTrue(completedHeader.waitForExistence(timeout: 5), "the Completed section should exist after completing tasks")
+        completedHeader.tap()
+
+        // The toggle's own `task-row-toggle-<id>` identifier is superseded
+        // at runtime by its enclosing Section's identifier (the same List-
+        // section quirk documented on the incomplete-circle locator above),
+        // so completed toggles surface as buttons carrying the
+        // "agenda-completed-section" identifier.
+        let completedToggles = app.buttons.matching(NSPredicate(format: "identifier == 'agenda-completed-section' AND label != 'Completed'"))
+        if !completedToggles.firstMatch.waitForExistence(timeout: 5) {
+            let dump = app.buttons.allElementsBoundByIndex.map { "[\($0.identifier)|\($0.label)]" }.joined(separator: " ")
+            XCTFail("expanding Completed should reveal completed checkmark toggles; visible buttons: \(dump)")
+            return
+        }
+        completedToggles.firstMatch.tap()
+
+        let reappeared = expectation(for: NSPredicate(format: "count == 1"), evaluatedWith: incompleteCircles)
+        XCTAssertEqual(XCTWaiter().wait(for: [reappeared], timeout: 3), .completed, "uncompleting must return the task to the incomplete working set")
+        // ... and it must still be there after the change-notification
+        // reload settles (the revert in the original bug landed ~1s later).
+        sleep(2)
+        XCTAssertEqual(incompleteCircles.count, 1, "the uncompleted task must not be raced back to completed")
+
+        // Leave the store clean for other tests: re-complete it.
+        incompleteCircles.firstMatch.tap()
     }
 
     // MARK: - DW-F5.2: Week strip swipe

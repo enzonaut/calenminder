@@ -67,7 +67,56 @@ final class AgendaViewModel: ObservableObject {
 
     // MARK: - Loading
 
+    /// Whether a `fetchAndApply()` is currently in flight.
+    private var isReloadInFlight = false
+    /// Whether another `load()` was requested while one was already in
+    /// flight - honored as exactly one more `fetchAndApply()` once the
+    /// in-flight one finishes, never a growing backlog.
+    private var isReloadPending = false
+
+    /// Coalescing gate in front of the real fetch (`fetchAndApply()`).
+    ///
+    /// `load()` has more callers than just the initial `.task` view
+    /// modifier: every mutation (`toggleTaskCompletion`, `addTask`, ...)
+    /// re-fetches right after its own write succeeds, *and*
+    /// `listenForStoreChanges()` independently re-fetches on every
+    /// `EKEventStoreChanged` notification - including the one that write
+    /// itself just caused (EventKit does not distinguish "my own write" from
+    /// "someone else changed it"). Those two triggers land within
+    /// milliseconds of each other. Previously each ran its own concurrent
+    /// `fetchAndApply()` and whichever happened to *finish* last (not
+    /// whichever was fresher) won, unconditionally overwriting `snapshot`/
+    /// `completedToday` - so a reload whose read raced ahead of the write's
+    /// full propagation through EventKit's reminder store could stomp the
+    /// correct, just-applied completed state back to incomplete. That is the
+    /// checkmark-tap flake: the write always succeeded (`ReminderTaskStore`
+    /// round-trips are independently verified), only the *display* of it
+    /// could lose the race.
+    ///
+    /// Fix: never run two `fetchAndApply()`s concurrently. If one is already
+    /// in flight, don't start a second one racing it - remember one more
+    /// reload is owed, and run exactly one right after the current one
+    /// finishes. That later reload reads `day` fresh at the moment it runs
+    /// (never a stale captured value), so it is never incorrect to run - it
+    /// naturally lands after the original write has had more time to
+    /// propagate, without ever guessing at or hard-coding a delay.
     func load() async {
+        guard !isReloadInFlight else {
+            isReloadPending = true
+            return
+        }
+        isReloadInFlight = true
+        await fetchAndApply()
+        isReloadInFlight = false
+        if isReloadPending {
+            isReloadPending = false
+            await load()
+        }
+    }
+
+    /// The actual fetch-and-assign; only ever run one at a time - see
+    /// `load()`'s coalescing gate above.
+    private func fetchAndApply() async {
         guard let window = DayWindow(day: day, calendar: calendar) else {
             errorMessage = "Something went wrong determining that day's date."
             return
