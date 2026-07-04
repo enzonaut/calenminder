@@ -60,4 +60,59 @@ struct WeekLayoutTests {
         #expect(days.count == 7)
         #expect(days.contains(DayStamp(year: 2026, month: 3, day: 8)))
     }
+
+    // MARK: - Feature 5: shiftedDay - the pure period-shifting math behind
+    // Week strip's chevron *and* swipe paging.
+
+    @Test("DW-F5.2: shifting by +1 week moves the anchor exactly 7 civil days forward")
+    func shiftedDayByOneWeekForwardMovesExactlySevenDays() {
+        let shifted = WeekLayout.shiftedDay(
+            from: DayStamp(year: 2026, month: 7, day: 3), byWeeks: 1, calendar: calendar(firstWeekday: 1)
+        )
+        #expect(shifted == DayStamp(year: 2026, month: 7, day: 10))
+    }
+
+    @Test("DW-F5.2: shifting by -1 week moves the anchor exactly 7 civil days back")
+    func shiftedDayByOneWeekBackMovesExactlySevenDays() {
+        let shifted = WeekLayout.shiftedDay(
+            from: DayStamp(year: 2026, month: 7, day: 3), byWeeks: -1, calendar: calendar(firstWeekday: 1)
+        )
+        #expect(shifted == DayStamp(year: 2026, month: 6, day: 26))
+    }
+
+    @Test("DW-F5.2: shifting by 0 weeks is a no-op")
+    func shiftedDayByZeroWeeksIsNoOp() {
+        let anchor = DayStamp(year: 2026, month: 7, day: 3)
+        #expect(WeekLayout.shiftedDay(from: anchor, byWeeks: 0, calendar: calendar(firstWeekday: 1)) == anchor)
+    }
+
+    @Test("DW-F5.2: shifting forward across a year boundary rolls the year over correctly")
+    func shiftedDayAcrossYearBoundaryRollsOver() {
+        let shifted = WeekLayout.shiftedDay(
+            from: DayStamp(year: 2026, month: 12, day: 30), byWeeks: 1, calendar: calendar(firstWeekday: 1)
+        )
+        #expect(shifted == DayStamp(year: 2027, month: 1, day: 6))
+    }
+
+    @Test("DW-F5.2: shifting a DST-transition week is still exactly 7 civil days later")
+    func shiftedDayAcrossDSTIsStillSevenCivilDaysLater() {
+        // 2026-03-08 is spring-forward day (23-hour civil day); the shift
+        // counts civil days, unaffected by that hour's absence.
+        let shifted = WeekLayout.shiftedDay(
+            from: DayStamp(year: 2026, month: 3, day: 8), byWeeks: 1, calendar: calendar(firstWeekday: 1)
+        )
+        #expect(shifted == DayStamp(year: 2026, month: 3, day: 15))
+    }
+
+    @Test("DW-F5.2: the shifted-to week window contains the shifted day, exactly like any other anchor")
+    func shiftedDayComposesWithDaysContaining() {
+        let anchor = DayStamp(year: 2026, month: 7, day: 3)
+        let nextWeekAnchor = WeekLayout.shiftedDay(from: anchor, byWeeks: 1, calendar: calendar(firstWeekday: 1))
+        let nextWeekDays = WeekLayout.days(containing: nextWeekAnchor, calendar: calendar(firstWeekday: 1))
+        #expect(nextWeekDays.count == 7)
+        #expect(nextWeekDays.contains(nextWeekAnchor))
+        // The two 7-day windows must be adjacent, non-overlapping weeks.
+        let thisWeekDays = WeekLayout.days(containing: anchor, calendar: calendar(firstWeekday: 1))
+        #expect(Set(thisWeekDays).isDisjoint(with: Set(nextWeekDays)))
+    }
 }

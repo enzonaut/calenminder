@@ -69,4 +69,16 @@ final class MonthViewModel: ObservableObject {
         month = month.adding(months: value, in: calendar)
         Task { await load() }
     }
+
+    /// Builds a sibling view model for a different month, reusing this
+    /// instance's own `agendaService`/`calendar`/clock - `agendaService` stays
+    /// `private`, so `MonthView`'s swipe-paging window (see the Feature 5
+    /// discovery doc) can prefetch adjacent months without needing its own
+    /// reference to it. The returned instance has its `grid` already computed
+    /// (synchronous, no I/O - see `init`) but has not been `load()`-ed yet;
+    /// that is the caller's responsibility, matching every other
+    /// `MonthViewModel` construction site in this codebase.
+    func sibling(for month: MonthStamp) -> MonthViewModel {
+        MonthViewModel(agendaService: agendaService, month: month, calendar: calendar, now: now)
+    }
 }

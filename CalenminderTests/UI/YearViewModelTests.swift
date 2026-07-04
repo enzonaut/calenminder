@@ -53,4 +53,16 @@ struct YearViewModelTests {
         let viewModel = YearViewModel(calendar: cal, now: { Fixture.date(cal, 2030, 1, 1) })
         #expect(viewModel.year == 2030)
     }
+
+    @Test("DW-F5.4: sibling(for:) targets the requested year, reusing this instance's own calendar/clock")
+    func siblingTargetsRequestedYearReusingCalendarAndClock() {
+        let viewModel = YearViewModel(year: 2026, calendar: cal, now: { Fixture.date(cal, 2026, 7, 3) })
+
+        let sibling = viewModel.sibling(for: 2027)
+
+        #expect(sibling.year == 2027)
+        // Reuses the same fixed clock, not `Date()` - `today` still resolves
+        // to the same injected "now" as the original instance.
+        #expect(sibling.today == DayStamp(year: 2026, month: 7, day: 3))
+    }
 }

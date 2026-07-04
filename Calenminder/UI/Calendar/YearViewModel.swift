@@ -40,4 +40,14 @@ final class YearViewModel: ObservableObject {
     func goToNextYear() {
         year += 1
     }
+
+    /// Builds a sibling view model for a different year, reusing this
+    /// instance's own `calendar`/clock - `YearView`'s swipe-paging window
+    /// (see the Feature 5 discovery doc) uses this for its previous/next
+    /// pages rather than reaching for `Calendar.current`/`Date.init`
+    /// directly, so a fixed-clock test instance's neighbors stay on that same
+    /// fixed clock too.
+    func sibling(for year: Int) -> YearViewModel {
+        YearViewModel(year: year, calendar: calendar, now: now)
+    }
 }

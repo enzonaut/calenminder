@@ -19,4 +19,27 @@ enum WeekLayout {
             return DayStamp(date: instant, calendar: calendar)
         }
     }
+
+    /// The day exactly `weeks` calendar-weeks away from `day` - the pure
+    /// period-shifting math behind Week strip's chevron *and* swipe paging
+    /// (`WeekStripView.pageWeek`/`handleSwipeSettle`, which both call this
+    /// same function rather than duplicating the day-shift arithmetic).
+    ///
+    ///     Find the instant at the start of `day` in `calendar`
+    ///     If that instant exists:
+    ///         Add (weeks * 7) days to it using `calendar`
+    ///         If the shifted instant exists:
+    ///             Return the DayStamp for that shifted instant, read in `calendar`
+    ///     Return `day` unchanged (pathological-calendar fallback; never hit for Gregorian)
+    ///
+    /// `Calendar.date(byAdding:.day...)` (not hand-rolled arithmetic) keeps
+    /// this DST-safe: adding civil days always normalizes across a
+    /// spring-forward/fall-back boundary correctly.
+    static func shiftedDay(from day: DayStamp, byWeeks weeks: Int, calendar: Calendar) -> DayStamp {
+        guard
+            let start = day.startOfDay(in: calendar),
+            let shifted = calendar.date(byAdding: .day, value: weeks * 7, to: start)
+        else { return day }
+        return DayStamp(date: shifted, calendar: calendar)
+    }
 }

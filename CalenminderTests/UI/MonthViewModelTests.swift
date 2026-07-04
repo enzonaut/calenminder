@@ -90,4 +90,36 @@ struct MonthViewModelTests {
 
         #expect(viewModel.errorMessage != nil)
     }
+
+    // MARK: - Feature 5: sibling(for:) - the swipe-paging prefetch window's
+    // building block.
+
+    @Test("DW-F5.3: sibling(for:) targets the requested month, with its grid already computed synchronously")
+    func siblingTargetsRequestedMonthWithGridPrecomputed() {
+        let viewModel = makeViewModel(month: MonthStamp(year: 2026, month: 7))
+
+        let sibling = viewModel.sibling(for: MonthStamp(year: 2026, month: 8))
+
+        #expect(sibling.month == MonthStamp(year: 2026, month: 8))
+        #expect(sibling.grid == MonthGrid.rows(for: MonthStamp(year: 2026, month: 8), calendar: cal))
+        // No load() has been called yet - summaries stay empty until the
+        // caller (MonthView's prefetch) asks for them, matching every other
+        // MonthViewModel construction site.
+        #expect(sibling.summaries.isEmpty)
+    }
+
+    @Test("DW-F5.3: sibling(for:) reuses this instance's own agendaService, not a disconnected copy")
+    func test_DW_F5_3_siblingReusesAgendaServiceAndLoadsIndependently() async {
+        let events = FakeEventStore()
+        events.events = [Fixture.event(id: "e1", start: Fixture.date(cal, 2026, 8, 15, 9), end: Fixture.date(cal, 2026, 8, 15, 10))]
+        let viewModel = makeViewModel(events: events, month: MonthStamp(year: 2026, month: 7))
+
+        let sibling = viewModel.sibling(for: MonthStamp(year: 2026, month: 8))
+        await sibling.load()
+
+        #expect(sibling.summaries[DayStamp(year: 2026, month: 8, day: 15)]?.hasEvents == true)
+        // The sibling's own load() must not have disturbed the original
+        // (still-July) view model's state.
+        #expect(viewModel.month == MonthStamp(year: 2026, month: 7))
+    }
 }

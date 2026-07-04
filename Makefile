@@ -13,7 +13,13 @@ SIMULATOR_NAME := iPhone 17 Pro
 # month-grid rendering collapse, neither of which the offscreen
 # `ImageRenderer`-based view-smoke tests can catch (see that file's header
 # comment and the phase discovery doc).
-INTEGRATION_SUITES := CalenminderTests/EventKitEventStoreIntegrationTests CalenminderTests/ReminderTaskStoreIntegrationTests CalenminderTests/AgendaServiceIntegrationTests CalenminderUITests/CalendarToolbarLayoutUITests
+#
+# CalenminderUITests/SwipeNavigationUITests joins for the same reason again
+# (Feature 5): real-swipe paging on Day/Week/Month/Year, which needs a real
+# touch/drag gesture on a booted simulator (and, for Day/Month, seeds a real
+# event/task through the composer) - not something any offscreen or fake-
+# store unit test can drive.
+INTEGRATION_SUITES := CalenminderTests/EventKitEventStoreIntegrationTests CalenminderTests/ReminderTaskStoreIntegrationTests CalenminderTests/AgendaServiceIntegrationTests CalenminderUITests/CalendarToolbarLayoutUITests CalenminderUITests/SwipeNavigationUITests
 SKIP_INTEGRATION := $(foreach s,$(INTEGRATION_SUITES),-skip-testing:$(s))
 ONLY_INTEGRATION := $(foreach s,$(INTEGRATION_SUITES),-only-testing:$(s))
 

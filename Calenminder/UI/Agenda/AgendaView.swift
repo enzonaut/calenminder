@@ -9,6 +9,36 @@ struct AgendaView: View {
     /// pass one (e.g. existing tests constructing `AgendaView` directly).
     var navigation: CalendarNavigationViewModel?
 
+    /// Feature 5: horizontal-dominant, `>60pt` drag pages to the previous/
+    /// next day - a `DragGesture`, not `TabView(.page)` (used by Week/Month/
+    /// Year), because this `List` already owns vertical scrolling,
+    /// `.refreshable`, row taps, and the checkmark `Button`s; a second
+    /// `TabView` layer here would mean three separate `List`/
+    /// `AgendaViewModel` instances, which conflicts with `AgendaViewModel.day`
+    /// staying the single source of truth (see the Feature 5 discovery doc's
+    /// "Day view: DragGesture, not TabView" design decision).
+    ///
+    /// `.simultaneousGesture` (not `.gesture`/`.highPriorityGesture`) means
+    /// this is recognized *alongside* the `List`'s own recognizers, not in
+    /// place of them: vertical scroll and pull-to-refresh only ever satisfy
+    /// this gesture's vertical component, never its horizontal-dominant
+    /// check, so they are unaffected. `minimumDistance: 24` means a plain tap
+    /// (near-zero movement) never reaches `onEnded` at all, so row taps and
+    /// the task-row checkmark `Button` are untouched.
+    private var daySwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 24)
+            .onEnded { value in
+                let horizontal = value.translation.width
+                let vertical = value.translation.height
+                guard abs(horizontal) > abs(vertical) * 1.5, abs(horizontal) > 60 else { return }
+                if horizontal < 0 {
+                    viewModel.goToNextDay()
+                } else {
+                    viewModel.goToPreviousDay()
+                }
+            }
+    }
+
     @State private var selectedEvent: Event?
     @State private var showingEventComposer = false
     @State private var showingTaskComposer = false
@@ -55,6 +85,8 @@ struct AgendaView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .accessibilityIdentifier("agenda-list")
+            .simultaneousGesture(daySwipeGesture)
             .navigationTitle(dayTitle)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
