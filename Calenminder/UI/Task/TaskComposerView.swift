@@ -15,6 +15,8 @@ struct TaskComposerView: View {
                 }
 
                 Section {
+                    Toggle("Every day", isOn: $viewModel.repeatsDaily)
+                        .accessibilityIdentifier("task-composer-repeats-daily")
                     Toggle("Repeats weekly", isOn: $viewModel.repeatsWeekly)
                         .accessibilityIdentifier("task-composer-repeats")
                     if viewModel.repeatsWeekly {

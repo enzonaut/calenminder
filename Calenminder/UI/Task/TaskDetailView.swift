@@ -32,6 +32,11 @@ struct TaskDetailView: View {
                     Text(task.title)
                         .font(.title3.bold())
                         .accessibilityIdentifier("task-detail-title")
+                    if let recurrenceDescription = viewModel.recurrenceDescription {
+                        Text(recurrenceDescription)
+                            .foregroundStyle(.secondary)
+                            .accessibilityIdentifier("task-detail-recurrence")
+                    }
                     Button {
                         Task { await viewModel.toggleCompletion() }
                     } label: {

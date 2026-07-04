@@ -8,8 +8,16 @@ import CalenminderKit
 final class TaskComposerViewModel: ObservableObject {
     @Published var title: String = ""
     @Published var dueDay: DayStamp
-    @Published var repeatsWeekly: Bool = false
+    /// Mutually exclusive with `repeatsDaily` -- setting one off the other,
+    /// enforced here (not the view) so it holds regardless of which control
+    /// drives it.
+    @Published var repeatsWeekly: Bool = false {
+        didSet { if repeatsWeekly && repeatsDaily { repeatsDaily = false } }
+    }
     @Published var weekday: Int
+    @Published var repeatsDaily: Bool = false {
+        didSet { if repeatsDaily && repeatsWeekly { repeatsWeekly = false } }
+    }
     @Published private(set) var isSaving = false
     @Published var errorMessage: String?
 
@@ -36,10 +44,11 @@ final class TaskComposerViewModel: ObservableObject {
         isSaving = true
         defer { isSaving = false }
 
+        let recurrence: TaskRecurrence? = repeatsDaily ? .daily : (repeatsWeekly ? .weekly(weekday: weekday) : nil)
         let draft = TaskDraft(
             title: title.trimmingCharacters(in: .whitespacesAndNewlines),
             dueDay: dueDay,
-            recurrence: repeatsWeekly ? .weekly(weekday: weekday) : nil
+            recurrence: recurrence
         )
         guard let created = await agenda.addTask(draft) else {
             errorMessage = agenda.errorMessage

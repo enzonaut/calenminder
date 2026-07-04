@@ -76,6 +76,45 @@ struct ReminderTaskStoreIntegrationTests {
         }
     }
 
+    @Test("DW-F1.4: create date-only, recur daily, complete against the real Reminders store")
+    func test_DW_F1_4_createRecurDailyComplete() async throws {
+        guard EKEventStore.authorizationStatus(for: .reminder) == .fullAccess else {
+            Issue.record("Reminders full access not granted to the test runner")
+            return
+        }
+        let calendar = Calendar(identifier: .gregorian)
+        let dueDay = DayStamp(date: Date(), calendar: calendar)
+        let store = ReminderTaskStore()
+        let title = "Calenminder DW-F1.4 \(UUID().uuidString.prefix(8))"
+
+        // Create, date-only, daily recurrence.
+        let created = try await store.add(TaskDraft(title: title, dueDay: dueDay, recurrence: .daily))
+        #expect(created.title == title)
+        #expect(created.dueDay == dueDay)
+        #expect(created.isCompleted == false)
+        #expect(created.recurrence == .daily)
+
+        // Complete: per the same empirical verdict as weekly, EventKit
+        // itself advances a recurring reminder to its next occurrence and
+        // resets completion on save.
+        try await store.setCompleted(created, true)
+        let afterComplete = try await store.tasks(dueOn: dueDay, includeCompleted: true)
+            .first(where: { $0.externalIdentifier == created.externalIdentifier })
+        #expect(afterComplete == nil, "the reminder should have rolled off its original due day")
+
+        let tomorrow = DayStamp(date: calendar.date(byAdding: .day, value: 1, to: dueDay.startOfDay(in: calendar)!)!, calendar: calendar)
+        let rolled = try await store.tasks(dueOn: tomorrow, includeCompleted: true)
+            .first(where: { $0.externalIdentifier == created.externalIdentifier })
+        #expect(rolled?.isCompleted == false, "EventKit resets completion when it rolls the occurrence forward")
+        #expect(rolled?.recurrence == .daily, "recurrence shape survives the EventKit-driven rollover")
+
+        // Cleanup.
+        let realStore = EKEventStore()
+        if let reminder = realStore.calendarItems(withExternalIdentifier: created.externalIdentifier).first as? EKReminder {
+            try? realStore.remove(reminder, commit: true)
+        }
+    }
+
     @Test("DW-3.3: setCompleted(false) on a genuinely-completed non-recurring task reverses completion")
     func test_DW_3_3_uncompleteNonRecurringTask() async throws {
         guard EKEventStore.authorizationStatus(for: .reminder) == .fullAccess else {

@@ -23,6 +23,27 @@ final class TaskDetailViewModel: ObservableObject {
         self.externalIdentifier = externalIdentifier
     }
 
+    /// Human-readable recurrence line for the found task, `nil` when there is
+    /// no task yet or it does not recur.
+    var recurrenceDescription: String? {
+        guard case .found(let task) = state, let recurrence = task.recurrence else { return nil }
+        return Self.describe(recurrence)
+    }
+
+    private static func describe(_ recurrence: TaskRecurrence) -> String {
+        switch recurrence {
+        case .daily:
+            return "Repeats daily"
+        case .weekly(let weekday):
+            // Defensive: a garbled weekday degrades to generic copy rather
+            // than crashing on an out-of-range `weekdaySymbols` index,
+            // matching this codebase's "garbled input excluded gracefully"
+            // pattern.
+            guard (1...7).contains(weekday) else { return "Repeats weekly" }
+            return "Repeats every \(Calendar.current.weekdaySymbols[weekday - 1])"
+        }
+    }
+
     func load() async {
         state = .loading
         do {

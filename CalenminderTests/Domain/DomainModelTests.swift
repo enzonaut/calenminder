@@ -54,4 +54,20 @@ struct DomainModelTests {
         #expect(eventDraft.calendarIdentifier == nil)  // default calendar
         #expect(EditSpan.thisEvent != EditSpan.futureEvents)
     }
+
+    @Test("DW-F1.1: TaskRecurrence.daily is a distinct, equatable case")
+    func test_DW_F1_1_taskRecurrenceDailyIsDistinctCase() {
+        #expect(TaskRecurrence.daily == TaskRecurrence.daily)
+        #expect(TaskRecurrence.daily != .weekly(weekday: 1))
+    }
+
+    @Test("DW-F1.1: TaskDraft and DayTask carry .daily recurrence")
+    func test_DW_F1_1_draftAndTaskCarryDailyRecurrence() {
+        let day = DayStamp(year: 2026, month: 7, day: 3)
+        let draft = TaskDraft(title: "Take vitamins", dueDay: day, recurrence: .daily)
+        #expect(draft.recurrence == .daily)
+
+        let task = Fixture.task(id: "t1", due: day, recurrence: .daily)
+        #expect(task.recurrence == .daily)
+    }
 }

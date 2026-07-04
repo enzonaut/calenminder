@@ -40,12 +40,15 @@ struct RawEventDraft: Equatable {
 /// seam. Never `EKReminder`, for the same reason `RawEventRecord` is never
 /// `EKEvent`.
 ///
-/// `recurrenceWeekday` is already reduced from `EKReminder.recurrenceRules`
-/// down to "the first rule's weekday, if it is a plain weekly-by-one-weekday
-/// rule; otherwise nil" -- EventKit honors only one recurrence rule per
-/// reminder in practice, and this app never writes more than one, so any
-/// additional rule found on a reminder edited elsewhere is silently dropped
-/// here rather than modeled.
+/// `recurrenceWeekday`/`recurrenceIsDaily` are already reduced from
+/// `EKReminder.recurrenceRules` down to "the first rule's weekday, if it is a
+/// plain weekly-by-one-weekday rule" / "whether the first rule is a plain
+/// daily rule" -- EventKit honors only one recurrence rule per reminder in
+/// practice, and this app never writes more than one, so any additional rule
+/// found on a reminder edited elsewhere is silently dropped here rather than
+/// modeled. At most one of the two is ever non-empty (`recurrenceWeekday`
+/// non-nil, or `recurrenceIsDaily` true) since a reminder carries one
+/// recurrence rule of one shape.
 struct RawReminderRecord: Equatable {
     var externalIdentifier: String
     var title: String
@@ -53,6 +56,7 @@ struct RawReminderRecord: Equatable {
     var dueDay: DateComponents
     var isCompleted: Bool
     var recurrenceWeekday: Int?
+    var recurrenceIsDaily: Bool = false
 }
 
 /// The mutable fields needed to create a reminder via the provider seam.
@@ -60,4 +64,5 @@ struct RawReminderDraft: Equatable {
     var title: String
     var dueDay: DateComponents
     var recurrenceWeekday: Int?
+    var recurrenceIsDaily: Bool = false
 }

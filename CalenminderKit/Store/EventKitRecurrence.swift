@@ -46,4 +46,16 @@ enum EventKitRecurrence {
         guard let days = first.daysOfTheWeek, days.count == 1 else { return nil }
         return days[0].dayOfTheWeek.rawValue
     }
+
+    /// Builds the daily rule this app writes: every day, no end date.
+    static func dailyRule() -> EKRecurrenceRule {
+        EKRecurrenceRule(recurrenceWith: .daily, interval: 1, end: nil)
+    }
+
+    /// Whether the first rule (only -- same "extra rules silently dropped"
+    /// policy as `weeklyWeekday(from:)`) is a plain daily-every-1-day rule.
+    static func isDaily(from rules: [EKRecurrenceRule]?) -> Bool {
+        guard let first = rules?.first else { return false }
+        return first.frequency == .daily && first.interval == 1
+    }
 }

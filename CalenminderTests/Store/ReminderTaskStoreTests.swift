@@ -90,6 +90,16 @@ struct ReminderTaskStoreTests {
         #expect(task.recurrence == .weekly(weekday: 2))
     }
 
+    @Test("DW-F1.2: add(_:) with a daily recurrence round-trips through DayTask")
+    func test_DW_F1_2_add_dailyRecurrenceRoundTrips() async throws {
+        let provider = FixtureCalendarProvider()
+        let store = ReminderTaskStore(provider: provider)
+
+        let task = try await store.add(TaskDraft(title: "Take vitamins", dueDay: DayStamp(year: 2026, month: 7, day: 6), recurrence: .daily))
+
+        #expect(task.recurrence == .daily)
+    }
+
     // MARK: - DW-3.4: typed permission errors
 
     @Test("DW-3.4: tasks(dueOn:) with denied access throws .accessDenied(.reminder)")
@@ -188,6 +198,22 @@ struct ReminderTaskStoreTests {
         let record = provider.reminders.first(where: { $0.record.externalIdentifier == "t2" })!.record
         #expect(record.isCompleted == true)
         #expect(record.dueDay.day == 6)
+    }
+
+    @Test("setCompleted(true) on a daily-recurring task marks it complete without this store touching the due day (same pass-through as weekly)")
+    func setCompletedTrue_dailyRecurringTask_marksCompleteWithoutLocalReschedule() async throws {
+        let provider = FixtureCalendarProvider()
+        let listID = try provider.taskListCalendar(named: ReminderTaskStore.listName)
+        provider.reminders = [(RawReminderRecord(externalIdentifier: "t4", title: "Daily", dueDay: components(2026, 7, 6), isCompleted: false, recurrenceWeekday: nil, recurrenceIsDaily: true), listID)]
+        let store = ReminderTaskStore(provider: provider)
+        let task = DayTask(externalIdentifier: "t4", title: "Daily", dueDay: DayStamp(year: 2026, month: 7, day: 6), isCompleted: false, recurrence: .daily)
+
+        try await store.setCompleted(task, true)
+
+        let record = provider.reminders.first(where: { $0.record.externalIdentifier == "t4" })!.record
+        #expect(record.isCompleted == true)
+        #expect(record.dueDay.day == 6)
+        #expect(record.recurrenceIsDaily == true)
     }
 
     @Test("setCompleted(false) uncompletes the task as-is, with no reschedule")

@@ -56,4 +56,45 @@ struct EventKitRecurrenceTests {
         )
         #expect(EventKitRecurrence.weeklyWeekday(from: [rule]) == nil)
     }
+
+    // MARK: - DW-F1.2: daily
+
+    @Test("DW-F1.2: dailyRule() builds EKRecurrenceRule(.daily, interval: 1)")
+    func test_DW_F1_2_dailyRuleBuildsExpectedShape() {
+        let rule = EventKitRecurrence.dailyRule()
+        #expect(rule.frequency == .daily)
+        #expect(rule.interval == 1)
+    }
+
+    @Test("DW-F1.2: isDaily(from:) reads back a plain daily rule")
+    func test_DW_F1_2_isDailyReadsBackDailyRule() {
+        let rule = EventKitRecurrence.dailyRule()
+        #expect(EventKitRecurrence.isDaily(from: [rule]) == true)
+    }
+
+    @Test("isDaily(from:) returns false for no rules")
+    func isDailyReturnsFalseForNoRules() {
+        #expect(EventKitRecurrence.isDaily(from: nil) == false)
+        #expect(EventKitRecurrence.isDaily(from: []) == false)
+    }
+
+    @Test("isDaily(from:) returns false for a weekly rule (not the shape this app writes for daily)")
+    func isDailyReturnsFalseForWeeklyRule() {
+        let weekly = EventKitRecurrence.weeklyRule(weekday: 2)!
+        #expect(EventKitRecurrence.isDaily(from: [weekly]) == false)
+    }
+
+    @Test("isDaily(from:) returns false for a daily rule with an interval other than 1")
+    func isDailyReturnsFalseForNonUnitInterval() {
+        let everyOtherDay = EKRecurrenceRule(recurrenceWith: .daily, interval: 2, end: nil)
+        #expect(EventKitRecurrence.isDaily(from: [everyOtherDay]) == false)
+    }
+
+    @Test("isDaily(from:) silently drops a second recurrence rule, reading only the first")
+    func isDailySilentlyDropsSecondRule() {
+        let daily = EventKitRecurrence.dailyRule()
+        let weekly = EventKitRecurrence.weeklyRule(weekday: 3)!
+        #expect(EventKitRecurrence.isDaily(from: [daily, weekly]) == true)
+        #expect(EventKitRecurrence.isDaily(from: [weekly, daily]) == false)
+    }
 }

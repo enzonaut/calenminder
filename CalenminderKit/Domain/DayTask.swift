@@ -1,8 +1,8 @@
 import Foundation
 
-/// How a task repeats. v1 supports at minimum weekly-by-weekday ("every
-/// Monday"), matching the recycling use case; EventKit honors one recurrence
-/// rule per reminder.
+/// How a task repeats. v1 supports weekly-by-weekday ("every Monday"),
+/// matching the recycling use case; daily ("every day") was added post-v1 for
+/// the same reason -- EventKit honors one recurrence rule per reminder.
 ///
 /// Named `TaskRecurrence` (not `Recurrence`) to stay unambiguous alongside
 /// event recurrence, which the domain never expands (EventKit hands back
@@ -11,6 +11,8 @@ public enum TaskRecurrence: Equatable, Sendable {
     /// Repeats weekly on `weekday`, using Gregorian weekday numbering
     /// (Sunday = 1 ... Saturday = 7), matching `Calendar.component(.weekday:)`.
     case weekly(weekday: Int)
+    /// Repeats every day.
+    case daily
 }
 
 /// A day-scoped, completable task - the domain view of an EKReminder.

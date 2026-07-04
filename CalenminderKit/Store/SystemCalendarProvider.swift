@@ -97,7 +97,8 @@ final class SystemCalendarProvider {
             title: reminder.title ?? "",
             dueDay: reminder.dueDateComponents ?? DateComponents(),
             isCompleted: reminder.isCompleted,
-            recurrenceWeekday: EventKitRecurrence.weeklyWeekday(from: reminder.recurrenceRules)
+            recurrenceWeekday: EventKitRecurrence.weeklyWeekday(from: reminder.recurrenceRules),
+            recurrenceIsDaily: EventKitRecurrence.isDaily(from: reminder.recurrenceRules)
         )
     }
 
@@ -233,6 +234,8 @@ extension SystemCalendarProvider: ReminderProviding {
         reminder.dueDateComponents = Self.gregorianComponents(draft.dueDay)
         if let weekday = draft.recurrenceWeekday, let rule = EventKitRecurrence.weeklyRule(weekday: weekday) {
             reminder.addRecurrenceRule(rule)
+        } else if draft.recurrenceIsDaily {
+            reminder.addRecurrenceRule(EventKitRecurrence.dailyRule())
         }
         do {
             try store.save(reminder, commit: true)

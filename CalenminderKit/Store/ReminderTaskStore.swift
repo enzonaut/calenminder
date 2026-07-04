@@ -60,7 +60,8 @@ public final class ReminderTaskStore: TaskStoring {
             let rawDraft = RawReminderDraft(
                 title: draft.title,
                 dueDay: Self.dateComponents(from: draft.dueDay),
-                recurrenceWeekday: Self.weekday(from: draft.recurrence)
+                recurrenceWeekday: Self.weekday(from: draft.recurrence),
+                recurrenceIsDaily: Self.isDaily(from: draft.recurrence)
             )
             let record = try provider.createReminder(rawDraft, calendarIdentifier: listID)
             return Self.task(from: record)
@@ -122,13 +123,28 @@ public final class ReminderTaskStore: TaskStoring {
         return weekday
     }
 
+    private static func isDaily(from recurrence: TaskRecurrence?) -> Bool {
+        guard case .daily = recurrence else { return false }
+        return true
+    }
+
+    /// At most one of `recurrenceWeekday`/`recurrenceIsDaily` is ever set on
+    /// a real record (see `RawReminderRecord`'s doc comment); weekday is
+    /// checked first, matching how `SystemCalendarProvider.createReminder`
+    /// prioritizes it when both happened to be present on a garbled record.
+    private static func recurrence(from record: RawReminderRecord) -> TaskRecurrence? {
+        if let weekday = record.recurrenceWeekday { return .weekly(weekday: weekday) }
+        if record.recurrenceIsDaily { return .daily }
+        return nil
+    }
+
     private static func task(from record: RawReminderRecord) -> DayTask {
         DayTask(
             externalIdentifier: record.externalIdentifier,
             title: record.title,
             dueDay: dayStamp(from: record.dueDay),
             isCompleted: record.isCompleted,
-            recurrence: record.recurrenceWeekday.map { .weekly(weekday: $0) }
+            recurrence: recurrence(from: record)
         )
     }
 

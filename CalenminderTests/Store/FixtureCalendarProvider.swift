@@ -169,7 +169,8 @@ extension FixtureCalendarProvider: ReminderProviding {
             title: draft.title,
             dueDay: draft.dueDay,
             isCompleted: false,
-            recurrenceWeekday: draft.recurrenceWeekday
+            recurrenceWeekday: draft.recurrenceWeekday,
+            recurrenceIsDaily: draft.recurrenceIsDaily
         )
         reminders.append((record, calendarIdentifier))
         return record
