@@ -151,14 +151,29 @@ extension FixtureCalendarProvider: ReminderProviding {
     }
 
     func fetchIncompleteReminders(calendarIdentifier: String, dueOnOrBefore day: DateComponents) async -> [RawReminderRecord] {
-        let target = (day.year ?? 0, day.month ?? 0, day.day ?? 0)
+        // Mimics the REAL provider faithfully, boundary quirk included:
+        // `SystemCalendarProvider` passes `ending = start of the day AFTER
+        // `day`` to `predicateForIncompleteReminders(withDueDateStarting:
+        // ending:)`, and EventKit treats a date-only reminder due exactly at
+        // that boundary instant (i.e. due *tomorrow*) as matching - confirmed
+        // empirically end-to-end (a Monday-due task leaked into Sunday's
+        // overdue fetch). This fixture used to filter with an honest civil
+        // `due <= day` comparison, which made it *stricter* than the real
+        // dependency and hid that leak from every unit test; it now
+        // reproduces the instant-based inclusive-boundary behavior so
+        // `ReminderTaskStore`'s own civil-day barricade is genuinely
+        // exercised.
+        let gregorian = Calendar(identifier: .gregorian)
+        guard let dayStart = gregorian.date(from: day),
+              let ending = gregorian.date(byAdding: .day, value: 1, to: dayStart)
+        else { return [] }
         return reminders
             .filter { $0.calendarIdentifier == calendarIdentifier }
             .map(\.record)
             .filter { !$0.isCompleted }
             .filter { record in
-                let due = (record.dueDay.year ?? 0, record.dueDay.month ?? 0, record.dueDay.day ?? 0)
-                return due == target || due < target
+                guard let due = gregorian.date(from: record.dueDay) else { return false }
+                return due <= ending
             }
     }
 

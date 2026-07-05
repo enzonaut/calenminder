@@ -19,7 +19,7 @@ SIMULATOR_NAME := iPhone 17 Pro
 # touch/drag gesture on a booted simulator (and, for Day/Month, seeds a real
 # event/task through the composer) - not something any offscreen or fake-
 # store unit test can drive.
-INTEGRATION_SUITES := CalenminderTests/EventKitEventStoreIntegrationTests CalenminderTests/ReminderTaskStoreIntegrationTests CalenminderTests/AgendaServiceIntegrationTests CalenminderUITests/CalendarToolbarLayoutUITests CalenminderUITests/SwipeNavigationUITests
+INTEGRATION_SUITES := CalenminderTests/EventKitEventStoreIntegrationTests CalenminderTests/ReminderTaskStoreIntegrationTests CalenminderTests/AgendaServiceIntegrationTests CalenminderUITests/CalendarToolbarLayoutUITests CalenminderUITests/SwipeNavigationUITests CalenminderUITests/RecurringTaskDueDayUITests
 SKIP_INTEGRATION := $(foreach s,$(INTEGRATION_SUITES),-skip-testing:$(s))
 ONLY_INTEGRATION := $(foreach s,$(INTEGRATION_SUITES),-only-testing:$(s))
 

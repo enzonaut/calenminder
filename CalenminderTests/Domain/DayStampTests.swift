@@ -63,4 +63,58 @@ struct DayStampTests {
         let date = Fixture.date(cal, 2026, 7, 3, 14, 30)
         #expect(DayStamp(date: date, calendar: cal) == DayStamp(year: 2026, month: 7, day: 3))
     }
+
+    // MARK: - DW-B2.1: weekly-recurrence anchor snapping (`nextOccurrence`)
+
+    @Test("DW-B2.1: the user's bug scenario - a Monday task composed on a Sunday snaps to the next Monday")
+    func test_DW_B2_1_sundayToNextMonday() {
+        let cal = Fixture.calendar("America/New_York")
+        // 2026-07-05 is a Sunday; weekly Monday = Gregorian weekday 2.
+        let sunday = DayStamp(year: 2026, month: 7, day: 5)
+        #expect(sunday.nextOccurrence(ofWeekday: 2, in: cal) == DayStamp(year: 2026, month: 7, day: 6))
+    }
+
+    @Test("DW-B2.1: same-weekday snapping keeps the day (composing 'every Monday' on a Monday)")
+    func test_DW_B2_1_sameWeekdayKeepsDay() {
+        let cal = Fixture.calendar("America/New_York")
+        // 2026-07-06 is a Monday; snapping to Monday (2) must return itself.
+        let monday = DayStamp(year: 2026, month: 7, day: 6)
+        #expect(monday.nextOccurrence(ofWeekday: 2, in: cal) == monday)
+    }
+
+    @Test("DW-B2.1: snapping to a weekday earlier in the week advances a full week")
+    func test_DW_B2_1_fullWeekWrap() {
+        let cal = Fixture.calendar("America/New_York")
+        // Monday 2026-07-06 snapping to Sunday (1) lands on the *next* Sunday.
+        let monday = DayStamp(year: 2026, month: 7, day: 6)
+        #expect(monday.nextOccurrence(ofWeekday: 1, in: cal) == DayStamp(year: 2026, month: 7, day: 12))
+    }
+
+    @Test("DW-B2.1: snapping is correct across the spring-forward DST week")
+    func test_DW_B2_1_acrossDSTWeek() {
+        let eastern = Fixture.calendar("America/New_York")
+        // 2026-03-08 is the 23-hour spring-forward Sunday in US Eastern.
+        // From Saturday 2026-03-07, snapping to Sunday (1) lands squarely on
+        // that short day (day-granular arithmetic, not a fixed 86 400s hop)...
+        let saturday = DayStamp(year: 2026, month: 3, day: 7)
+        #expect(saturday.nextOccurrence(ofWeekday: 1, in: eastern) == DayStamp(year: 2026, month: 3, day: 8))
+        // ...and snapping to Monday (2) crosses the DST boundary to 2026-03-09.
+        #expect(saturday.nextOccurrence(ofWeekday: 2, in: eastern) == DayStamp(year: 2026, month: 3, day: 9))
+    }
+
+    @Test("DW-B2.1: snapping is correct across a year boundary")
+    func test_DW_B2_1_acrossYearBoundary() {
+        let cal = Fixture.calendar("America/New_York")
+        // Tuesday 2025-12-30 snapping to Thursday (5) crosses into 2026.
+        let tuesday = DayStamp(year: 2025, month: 12, day: 30)
+        #expect(tuesday.nextOccurrence(ofWeekday: 5, in: cal) == DayStamp(year: 2026, month: 1, day: 1))
+    }
+
+    @Test("A garbled (out-of-range) weekday degrades to nil rather than crashing")
+    func nextOccurrenceRejectsOutOfRangeWeekday() {
+        let cal = Fixture.calendar("America/New_York")
+        let day = DayStamp(year: 2026, month: 7, day: 5)
+        #expect(day.nextOccurrence(ofWeekday: 0, in: cal) == nil)
+        #expect(day.nextOccurrence(ofWeekday: 8, in: cal) == nil)
+    }
 }

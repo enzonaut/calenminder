@@ -51,6 +51,17 @@ public final class ReminderTaskStore: TaskStoring {
         return await provider.fetchIncompleteReminders(calendarIdentifier: listID, dueOnOrBefore: Self.dateComponents(from: day))
             .filter { !$0.isCompleted }
             .map(Self.task(from:))
+            // Barricade against the provider's instant-based predicate:
+            // EventKit's `predicateForIncompleteReminders(withDueDateStarting:
+            // ending:)` treats a date-only reminder due *tomorrow* as due at
+            // exactly the `ending` boundary instant (start of tomorrow) and
+            // includes it - confirmed empirically end-to-end (a weekly task
+            // correctly anchored on Monday leaked into Sunday's agenda through
+            // this fetch, with no "Overdue" tag since its dueDay was not
+            // before the shown day). Due-day membership is decided here in
+            // civil-day terms, like every other read path in this store,
+            // never by trusting the predicate's instant boundary.
+            .filter { $0.dueDay <= day }
     }
 
     /// Feature 2's bounded month-range fetch. Reuses the *same* single

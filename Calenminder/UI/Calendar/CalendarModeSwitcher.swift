@@ -23,7 +23,19 @@ struct CalendarModeSwitcher: View {
             Text("Day").tag(Selection.day)
         }
         .pickerStyle(.segmented)
-        .fixedSize()
+        // Deliberately NOT `.fixedSize()`. As the `.principal` toolbar item,
+        // this switcher is centered in the *full* nav-bar width; a fixed
+        // intrinsic width (~186pt for "Year/Month/Day") cannot compress, so
+        // whenever the leading `ToolbarItemGroup` is wider than the trailing
+        // one - e.g. Day view drilled down, where leading carries back +
+        // "Today" against trailing's two icon buttons - the centered switcher
+        // slid sideways and overlapped the trailing buttons (confirmed on both
+        // regular and compact widths; see `test_DW_B2_2_*` in
+        // `CalendarToolbarLayoutUITests`). Letting it size to the available
+        // middle zone keeps every reachable toolbar state overlap-free; it
+        // shows full labels in every common state and only compresses in the
+        // single most crowded reachable state, which is standard segmented-
+        // control behavior under space pressure, not a broken layout.
         .accessibilityIdentifier("calendar-mode-switcher")
     }
 
