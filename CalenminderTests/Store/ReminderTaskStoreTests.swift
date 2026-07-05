@@ -66,6 +66,29 @@ struct ReminderTaskStoreTests {
         #expect(Set(overdue.map(\.externalIdentifier)) == ["past", "today"])
     }
 
+    @Test("DW-B2.1: incompleteTasks(overdueAsOf:) excludes a task due exactly tomorrow, despite EventKit's inclusive predicate boundary")
+    func test_DW_B2_1_incompleteTasksOverdueAsOf_excludesTomorrowBoundaryLeak() async throws {
+        // The user's exact read-path leg: a weekly task correctly anchored on
+        // Monday (tomorrow) leaked into Sunday's agenda through the overdue
+        // fetch, because EventKit's `predicateForIncompleteReminders(...,
+        // ending: start-of-tomorrow)` includes a date-only reminder due
+        // exactly at that boundary instant. The fixture reproduces that
+        // inclusive boundary (see `FixtureCalendarProvider
+        // .fetchIncompleteReminders`); the store's own civil-day barricade
+        // must exclude it. 2026-07-05 is a Sunday, 07-06 the next Monday.
+        let provider = FixtureCalendarProvider()
+        let listID = try provider.taskListCalendar(named: ReminderTaskStore.listName)
+        provider.reminders = [
+            (RawReminderRecord(externalIdentifier: "monday", title: "Weekly Monday", dueDay: components(2026, 7, 6), isCompleted: false, recurrenceWeekday: 2), listID),
+            (RawReminderRecord(externalIdentifier: "yesterday", title: "Yesterday", dueDay: components(2026, 7, 4), isCompleted: false, recurrenceWeekday: nil), listID),
+        ]
+        let store = ReminderTaskStore(provider: provider)
+
+        let overdue = try await store.incompleteTasks(overdueAsOf: DayStamp(year: 2026, month: 7, day: 5))
+
+        #expect(Set(overdue.map(\.externalIdentifier)) == ["yesterday"], "a task due tomorrow must never surface through the overdue-rollover fetch")
+    }
+
     // MARK: - DW-F2.1: bounded month-range incomplete-task fetch
 
     @Test("DW-F2.1: incompleteTasks(dueBetween:and:) returns only incomplete tasks whose due day falls in range")

@@ -53,6 +53,70 @@ struct TaskComposerViewModelTests {
         #expect(tasks.addedDrafts.last?.recurrence == .weekly(weekday: 2))
     }
 
+    @Test("DW-B2.1: saving a weekly task snaps its due day to the next occurrence of the weekday")
+    func test_DW_B2_1_savingWeeklySnapsDueDayToWeekday() async {
+        let cal = Calendar(identifier: .gregorian)
+        // 2026-07-05 is a Sunday - the user's exact scenario ("created a task
+        // for every monday, and i see it today sunday").
+        let sunday = DayStamp(year: 2026, month: 7, day: 5)
+        let tasks = FakeTaskStore()
+        let viewModel = TaskComposerViewModel(agenda: makeAgenda(tasks: tasks, day: sunday), dueDay: sunday, calendar: cal)
+        viewModel.title = "Take out recycling"
+        viewModel.repeatsWeekly = true
+        viewModel.weekday = 2 // Monday
+
+        _ = await viewModel.save()
+
+        // The anchor must land on Monday 2026-07-06, not the Sunday it was
+        // composed on - otherwise EventKit surfaces the first occurrence on
+        // the wrong weekday.
+        #expect(tasks.addedDrafts.last?.dueDay == DayStamp(year: 2026, month: 7, day: 6))
+        #expect(tasks.addedDrafts.last?.recurrence == .weekly(weekday: 2))
+    }
+
+    @Test("DW-B2.1: composing 'every Monday' on a Monday keeps that same Monday (same-day counts)")
+    func test_DW_B2_1_savingWeeklyOnMatchingWeekdayKeepsDay() async {
+        let cal = Calendar(identifier: .gregorian)
+        let monday = DayStamp(year: 2026, month: 7, day: 6) // a Monday
+        let tasks = FakeTaskStore()
+        let viewModel = TaskComposerViewModel(agenda: makeAgenda(tasks: tasks, day: monday), dueDay: monday, calendar: cal)
+        viewModel.title = "Water plants"
+        viewModel.repeatsWeekly = true
+        viewModel.weekday = 2 // Monday
+
+        _ = await viewModel.save()
+
+        #expect(tasks.addedDrafts.last?.dueDay == monday)
+    }
+
+    @Test("DW-B2.1: a daily task is not snapped - it keeps the composed day (daily includes today)")
+    func test_DW_B2_1_savingDailyKeepsComposedDay() async {
+        let cal = Calendar(identifier: .gregorian)
+        let sunday = DayStamp(year: 2026, month: 7, day: 5)
+        let tasks = FakeTaskStore()
+        let viewModel = TaskComposerViewModel(agenda: makeAgenda(tasks: tasks, day: sunday), dueDay: sunday, calendar: cal)
+        viewModel.title = "Take vitamins"
+        viewModel.repeatsDaily = true
+
+        _ = await viewModel.save()
+
+        #expect(tasks.addedDrafts.last?.dueDay == sunday)
+    }
+
+    @Test("DW-B2.1: a non-recurring task keeps the exact composed day")
+    func test_DW_B2_1_savingNonRecurringKeepsComposedDay() async {
+        let cal = Calendar(identifier: .gregorian)
+        let sunday = DayStamp(year: 2026, month: 7, day: 5)
+        let tasks = FakeTaskStore()
+        let viewModel = TaskComposerViewModel(agenda: makeAgenda(tasks: tasks, day: sunday), dueDay: sunday, calendar: cal)
+        viewModel.title = "One-off errand"
+
+        _ = await viewModel.save()
+
+        #expect(tasks.addedDrafts.last?.dueDay == sunday)
+        #expect(tasks.addedDrafts.last?.recurrence == nil)
+    }
+
     @Test("DW-F1.3: saving with repeatsDaily creates a daily-recurring task")
     func test_DW_F1_3_savingWithRepeatsDailyCreatesRecurringTask() async {
         let day = DayStamp(year: 2026, month: 7, day: 3)

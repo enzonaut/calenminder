@@ -75,6 +75,7 @@
 		71AD46DA2FC622F349AE80B7 /* YearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E233F12DCE569244F2D8C1 /* YearView.swift */; };
 		7329225575A0CC756AF308FB /* RawRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = C440FFC7D1517830E9187CD5 /* RawRecords.swift */; };
 		734E484CCA4458BE6396928A /* EventDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEF451B885C374915EDE4066 /* EventDetailViewModelTests.swift */; };
+		74BF8F0C3E621E0D6DEBA62A /* RecurringTaskDueDayUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0EC7495D71756D918451140 /* RecurringTaskDueDayUITests.swift */; };
 		75451065C2249CFD4D854717 /* MonthGridTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63D173AC89472D3D46433817 /* MonthGridTests.swift */; };
 		764586543A2AA07A53182798 /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BC684A664D2C7CF5D05656 /* DeepLink.swift */; };
 		764E38877C69A67D08D35603 /* SystemCalendarProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE5AEF1A2C48E4F8704F54C /* SystemCalendarProvider.swift */; };
@@ -400,6 +401,7 @@
 		DA68BC824A6D4A05EE17C331 /* StoreTestTags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreTestTags.swift; sourceTree = "<group>"; };
 		DD58DF735CD0044E2A72EDAD /* MonthStampTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthStampTests.swift; sourceTree = "<group>"; };
 		E03259BEE04444A0969616DA /* AgendaWidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaWidgetEntryView.swift; sourceTree = "<group>"; };
+		E0EC7495D71756D918451140 /* RecurringTaskDueDayUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringTaskDueDayUITests.swift; sourceTree = "<group>"; };
 		E36A340CCC015EBC4D347B11 /* AgendaServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaServiceTests.swift; sourceTree = "<group>"; };
 		E87C915F54A0FC0C96341C1D /* DomainModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainModelTests.swift; sourceTree = "<group>"; };
 		EA73D7A9E5C17D12C65C4FF8 /* BackgroundTasks.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BackgroundTasks.framework; path = System/Library/Frameworks/BackgroundTasks.framework; sourceTree = SDKROOT; };
@@ -649,6 +651,7 @@
 			isa = PBXGroup;
 			children = (
 				5A74968DFD54F823F28E5422 /* CalendarToolbarLayoutUITests.swift */,
+				E0EC7495D71756D918451140 /* RecurringTaskDueDayUITests.swift */,
 				722085E62AF65B1049F457E8 /* SwipeNavigationUITests.swift */,
 			);
 			path = CalenminderUITests;
@@ -1131,6 +1134,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3E4A835031327A7D23531698 /* CalendarToolbarLayoutUITests.swift in Sources */,
+				74BF8F0C3E621E0D6DEBA62A /* RecurringTaskDueDayUITests.swift in Sources */,
 				EBAFABC12EA01BFF5B417C51 /* SwipeNavigationUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

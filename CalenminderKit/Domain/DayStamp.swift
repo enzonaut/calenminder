@@ -37,6 +37,31 @@ public struct DayStamp: Hashable, Comparable, Sendable {
         return calendar.date(from: c)
     }
 
+    /// The civil day on or after `self` whose Gregorian weekday is `weekday`
+    /// (Sunday = 1 ... Saturday = 7, matching `Calendar.component(.weekday:)`
+    /// and `TaskRecurrence.weekly(weekday:)`). Same-day counts: when `self`
+    /// already falls on `weekday`, `self` is returned unchanged - so anchoring
+    /// "every Monday" on a Monday keeps that Monday, while anchoring it on a
+    /// Sunday advances one day to the next Monday.
+    ///
+    /// This is the snap that makes a weekly-recurring task's first occurrence
+    /// land on its own weekday rather than on whatever day it was created:
+    /// EventKit advances a recurring reminder from its `dueDateComponents`
+    /// anchor, so the anchor itself must already sit on the recurrence weekday.
+    ///
+    /// `nil` if `weekday` is out of range (a garbled weekday degrades to "no
+    /// snap" rather than crashing, matching this codebase's graceful-garbled
+    /// pattern) or if `self` does not resolve to a real date in `calendar`.
+    /// Day-granular calendar arithmetic keeps this DST-safe (it advances by
+    /// civil days, never a fixed 86 400s) and correct across month/year ends.
+    public func nextOccurrence(ofWeekday weekday: Int, in calendar: Calendar) -> DayStamp? {
+        guard (1...7).contains(weekday), let start = startOfDay(in: calendar) else { return nil }
+        let current = calendar.component(.weekday, from: start)
+        let delta = (weekday - current + 7) % 7
+        guard let target = calendar.date(byAdding: .day, value: delta, to: start) else { return nil }
+        return DayStamp(date: target, calendar: calendar)
+    }
+
     public static func < (lhs: DayStamp, rhs: DayStamp) -> Bool {
         (lhs.year, lhs.month, lhs.day) < (rhs.year, rhs.month, rhs.day)
     }
